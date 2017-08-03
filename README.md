@@ -2,11 +2,12 @@ w4
 ==
 
 + __Last update:__  2017/08/03
-+ __Version:__      0.0.6
++ __Version:__      0.0.7
 
 #### A collection of tiny HTML snippets, for seamless webpage loads
 
 + [b4:](b4.md) Checks that the current browser is supported
++ [i4:](i4.md) Runs a callback when the fonts you specify load
 
 
 Author
@@ -22,13 +23,13 @@ Created by Rich Plastow, during development of richplastow.com.
 
 Tested
 ------
-+ __Android:__             Android Browser 2+, Chrome 34+, Firefox 51+, Samsung Browser 3+
-+ __iOS 9:__               UC Browser 10 (correctly identified as ‘unknown’)
-+ __iOS 4:__               Safari 4
-+ __Windows 10:__          Edge 14+, IE 11
-+ __Windows 7:__           IE 10
-+ __Windows XP:__          Yandex 14+, Firefox 3+, Chrome 15+, Safari 4+, Opera 10+, IE 6+
-+ __OS X Mountain Lion:__  Safari 4+
++ __Android:__           Android Browser 2+, Chrome 34+, Firefox 51+, Samsung 3+
++ __iOS 9:__             UC Browser 10
++ __iOS 4:__             Safari 4
++ __Windows 10:__        Edge 14+, IE 11
++ __Windows 7:__         IE 10, Yandex 14
++ __Windows XP:__        Firefox 3+, Chrome 15+, Safari 4+, Opera 10+, IE 6+
++ __OS X Snow Leopard:__ Safari 4+
 
 
 Changelog
@@ -39,3 +40,4 @@ Changelog
 + 0.0.4       Rename -4 to w4 and rename DashFour to W4
 + 0.0.5       With b4, which checks that the current browser is supported
 + 0.0.6       Improved links
++ 0.0.7       With i4, which runs a callback when the fonts you specify load

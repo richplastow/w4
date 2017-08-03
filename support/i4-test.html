@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html class="i4" lang="en-GB">
+<head>
+<meta charset="utf-8">
+
+
+
+<!-- Polyfill CustomEvent for IE9+. richplastow.com/support/CustomEventIE.md -->
+<script>!function(W,C,P){/^f/.test(typeof W[C])?0:(W[C]=function(e,p,_){p=p||{}
+_=document.createEvent(C);_.initCustomEvent(e,!!p.bubbles,!!p.cancelable,
+p.detail);return _},W[C][P]=Event[P])}(this,'CustomEvent','prototype')</script>
+
+<!-- Replace `<html class="i4">` with "i4-", and then "i4-ok" or "i4-fail" -->
+<script>!function(c,R,A,I){function l(n,t){addEventListener(t,function(){c[R](
+n+'-');c[A](t)})};c[R](I);c[A](I+'-');l(I,I+'-ok');l(I,I+'-fail')
+}(document.lastChild.classList,'remove','add','i4')</script>
+
+<!-- Start loading fonts as soon as possible -->
+<style type="text/css">
+@font-face {
+    font-family: 'JuneRegular';
+    src: url('juneregular.woff') format('woff');
+    font-weight: 400; font-style: normal;
+}
+@font-face {
+    font-family: 'JuneBold';
+    src: url('junebold.woff') format('woff');
+    font-weight: 700; font-style: normal;
+}
+</style>
+
+
+<style>
+html {
+    background: #111;
+    color: #fff;
+}
+html.i4 h1 {
+    color: #00f;
+}
+html.i4- h1 {
+    color: #ff0;
+}
+html.i4-ok h1 {
+    color: #6f0;
+}
+html.i4-fail h1 {
+    color: #f06;
+}
+p {
+    display: none;
+}
+html.i4 p.show-i4,
+html.i4- p.show-i4-,
+html.i4-ok p.show-i4-ok,
+html.i4-fail p.show-i4-fail {
+    display: block;
+}
+</style>
+
+
+</head>
+<body>
+
+<!-- Run a callback when specified fonts load         richplastow.com/w4/#i4 -->
+<div id=i4 style=position:fixed;left:-99px></div><script>!function(F,c,t){var f,
+i=0,t=t||4000,d=document,S='scrollLeft',w=d.querySelector('#i4'),p=w.parentNode,
+E=[],s=function(f,e){e=d.createElement('DIV');e.innerHTML='IIII';e.style.cssText
+='max-width:99px;overflow-x:scroll;font:64px '+f+',monospace';w.appendChild(e);E
+.push(e);e[S]=9;e.addEventListener('scroll',l)},l=function(i,e){for(i=0;e=E[i++]
+;)if(1<e[S])return;c();c=function(){}};F=F.split(' ');for(;f=F[i++];)s(f);l()
+setTimeout(function(){p.removeChild(w);c(t)},t)}('JuneRegular JuneBold'
+,function(t){window.dispatchEvent(new Event('i4-'+(t?'fail':'ok')))})</script>
+
+<h1>Font status:</h1>
+<p class="show-i4">JavaScript switched off!</p>
+<p class="show-i4-">Loading font...</p>
+<p class="show-i4-ok">Font loaded!</p>
+<p class="show-i4-fail">Font failed!</p>
+
+</body>
+</html>
