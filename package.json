@@ -1,6 +1,6 @@
 {
   "name": "w4",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A collection of tiny HTML snippets, for seamless webpage loads",
   "main": "w4.js",
   "dependencies": {

@@ -1,9 +1,12 @@
 w4
 ==
 
++ __Last update:__  2017/08/03
++ __Version:__      0.0.6
+
 #### A collection of tiny HTML snippets, for seamless webpage loads
 
-+ [b4](b4.md): Checks that the current browser is supported
++ [b4:](b4.md) Checks that the current browser is supported
 
 
 Author
@@ -15,12 +18,6 @@ Created by Rich Plastow, during development of richplastow.com.
 + __GitHub:__       [richplastow](https://github.com/richplastow)
 + __Twitter:__      [@BtnWebVR](https://twitter.com/BtnWebVR)
 + __Location:__     Brighton, UK
-
-
-Version
--------
-+ __Last update:__  2017/08/03
-+ __Version:__      0.0.5
 
 
 Tested
@@ -41,3 +38,4 @@ Changelog
 + 0.0.3       Initial npm publish
 + 0.0.4       Rename -4 to w4 and rename DashFour to W4
 + 0.0.5       With b4, which checks that the current browser is supported
++ 0.0.6       Improved links

@@ -1,1 +1,1 @@
-console.log('w4 0.0.5');
+console.log('w4 0.0.6');
