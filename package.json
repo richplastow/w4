@@ -1,13 +1,13 @@
 {
-  "name": "-4",
-  "version": "0.0.3",
-  "description": "A collection of tiny HTML snippets, for seamless web app page loads",
-  "main": "-4.js",
+  "name": "w4",
+  "version": "0.0.4",
+  "description": "A collection of tiny HTML snippets, for seamless webpage loads",
+  "main": "w4.js",
   "dependencies": {
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/richplastow/-4.git"
+    "url": "git+https://github.com/richplastow/w4.git"
   },
   "keywords": [
     "web app",
@@ -20,7 +20,7 @@
   "author": "Rich Plastow <rich@richplastow.com> (http://richplastow.com/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/richplastow/-4/issues"
+    "url": "https://github.com/richplastow/w4/issues"
   },
-  "homepage": "http://richplastow.com/-4/"
+  "homepage": "http://richplastow.com/w4/"
 }

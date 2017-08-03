@@ -1,7 +1,7 @@
-DashFour
-========
+W4
+==
 
-#### A collection of tiny HTML snippets, for seamless web app page loads
+#### A collection of tiny HTML snippets, for seamless webpage loads
 
 
 Author
@@ -18,7 +18,7 @@ Created by Rich Plastow, during development of richplastow.com.
 Version
 -------
 + __Last update:__  2017/08/03
-+ __Version:__      0.0.3
++ __Version:__      0.0.4
 
 
 Tested
@@ -37,3 +37,4 @@ Changelog
 + 0.0.1       Initial README.md, package.json, index.html, -4.js
 + 0.0.2       Proper homepage link
 + 0.0.3       Initial npm publish
++ 0.0.4       Rename -4 to w4 and rename DashFour to W4
