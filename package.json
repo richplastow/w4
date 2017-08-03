@@ -1,0 +1,26 @@
+{
+  "name": "-4",
+  "version": "0.0.1",
+  "description": "A collection of tiny HTML snippets, for seamless web app page loads",
+  "main": "-4.js",
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richplastow/-4.git"
+  },
+  "keywords": [
+    "web app",
+    "framework",
+    "boot",
+    "loader",
+    "preload",
+    "progress bar",
+  ],
+  "author": "Rich Plastow <rich@richplastow.com> (http://richplastow.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/richplastow/-4/issues"
+  },
+  "homepage": "http://richplastow.com/-4/"
+}

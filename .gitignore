@@ -1,0 +1,9 @@
+# OS
+.DS_Store
+*.bak
+*.swp
+Thumbs.db
+
+# Versioning software
+.svn
+.cvs
