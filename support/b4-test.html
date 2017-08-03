@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+
+
+<!-- b4 = [supported, namecode, version, guicode]   richplastow.com/w4/b4.md -->
+<script>/*
+!function ( // use a closure to avoid polluting global scope (pre ES6)
+    V // the string ' Version/'
+  , u // the user-agent string, from `navigator.userAgent`
+  , G // the global scope object
+  , M // space-delimited string defining browser namecodes and minimum-versions
+) {
+    var c // namecode - one of b, u, e, o, c, f, i, a, s, x
+      , p // part-index, eg 'OPiOS/|OPR/|Opera/' has three parts
+      , i // index of browser name - then reused to mean ‘is not supported’
+      , j // index of 'Version/'
+      , k // index of the start of the version
+      , n // name, will be 'u' fo 'unknown' by default
+      , v // version, will be 0 if the version cannot be determined
+      , m // an individual minimum browser version
+
+        //// Define the namecodes.
+      , N = {
+            b: 'msungBrowser/'      // samsung browser
+          , e: ' Edge/'             // edge
+          , u: ' UCBrowser/'        // uc browser
+          , o: 'OPiOS/|OPR/|Opera/' // opera
+          , c: 'CriOS/|Chrome/'     // chrome
+          , f: 'FxiOS/|Firefox/'    // firefox
+          , i: 'rv:|MSIE |Trident/' // ie
+          , a: 'Android '           // android browser
+          , s: 'afari/'             // safari
+          , x: V + '| OS '          // unknown user-agent
+        }
+
+    //// Get the current browser’s namecode.
+    B: // label, to break out of the two-level loop
+    for (c in N) { // `c` is each namecode
+        for (p=0; n=N[c].split('|')[p++];) // `n` is 'OPiOS/', then 'OPR/' etc
+            if ( 0 <= (i=u.indexOf(n)) ) break B // if found, `i` is start-index
+    }
+
+    //// Get the current browser’s version.
+    k = // find it after ' Version/' if available, except on Chrome or Android
+        0 <= (j=u.indexOf(V)) && 'c' != c && 'a' != c ? j + 9
+      : i + n.length
+    v = n ? +u.slice(k).match(/^\d+/) : 0
+
+    //// Determine whether the current browser meets minimum spec.
+    for (i=p=0; m=M.split(' ')[p++];) // 'o10 c15 f3' becomes 'o10', 'c15', 'f3'
+        if (c == m.charAt(0) // found a matching namecode...
+         && v < m.slice(1) ) // ...whose version is too low (coerce str to num)
+            i = 1            // so ‘is not supported’ is true
+
+    //// Add the `b4` array to the global scope object.
+    G.b4 = [
+        !i // `true` if the browser is supported, `false` if not
+      , c  // the namecode, one of b, u, e, o, c, f, i, a, s, x
+      , v // the major-version, recorded as an integer (zero means unknown)
+      , /bot|crawl|spider/i.test(u) ? 'b' // guicode 'b' if bot
+          : /iP[aho]|Mobile|Tablet/.test(u) ? 'm' : 'd' // mobile or desktop
+    ] // '/bot|crawl|spider/i' is a reduction of stackoverflow.com/a/20084661
+
+}(
+    ' Version/' // helps minimise bytes
+  , navigator.userAgent // user-agent string
+  , window // it’s usual to specify `window` as b4’s global scope object
+  , 'b3 u10 e14 o10 c15 f3 i6 a2 s4 x0' // minimum user-agent versions
+) // end closure
+*/</script>
+
+
+<!-- b4 = [supported, namecode, version, guicode]   richplastow.com/w4/b4.md -->
+<script>!function (V,u,G,M){var c,p,i,j,k,n,v,m,N={b:'msungBrowser/',e:' Edge/',
+u:' UCBrowser/',o:'OPiOS/|OPR/|Opera/',c:'CriOS/|Chrome/',f:'FxiOS/|Firefox/',i:
+'rv:|MSIE |Trident/',a:'Android ',s:'afari/',x:V+'| OS '};B:for(c in N)for(p=0;n
+=N[c].split('|')[p++];)if(0<=(i=u.indexOf(n)))break B;k=0<=(j=u.indexOf(V))&&'c'
+!=c&&'a'!=c?j+9:i+n.length;v=n?+u.slice(k).match(/^\d+/):0;for(i=p=0;m=M.split(
+' ')[p++];)if(c==m.charAt(0)&&v<m.slice(1))i=1;G.b4=[!i,c,v,/bot|crawl|spider/i
+.test(u)?'b':/iP[aho]|Mobile|Tablet/.test(u)?'m':'d']}(' Version/',navigator
+.userAgent,window,'b3 u10 e14 o10 c15 f3 i6 a2 s4 x0')</script>
+
+<style>
+html {
+    background: #111;
+}
+html h1 {
+    color: #0ff;
+}
+</style>
+
+
+</head>
+<body>
+
+<h1 id="b4-out">Loading...</h1>
+
+<script>
+document.getElementById('b4-out').innerHTML =
+    b4
+  + '<br>'
+  + (b4[0] ? 'Browser is OK!' : 'Browser not supported.')
+  + '<br><br>'
+</script>
+
+</body>
+</html>
