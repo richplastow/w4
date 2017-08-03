@@ -8,6 +8,7 @@ Author
 ------
 Created by Rich Plastow, during development of richplastow.com.
 
++ __Homepage:__     [richplastow.com](http://richplastow.com)
 + __LinkedIn:__     [richardplastow](https://linkedin.com/in/richardplastow)
 + __GitHub:__       [richplastow](https://github.com/richplastow)
 + __Twitter:__      [@BtnWebVR](https://twitter.com/BtnWebVR)
@@ -17,7 +18,7 @@ Created by Rich Plastow, during development of richplastow.com.
 Version
 -------
 + __Last update:__  2017/08/03
-+ __Version:__      0.0.2
++ __Version:__      0.0.3
 
 
 Tested
@@ -35,3 +36,4 @@ Changelog
 ---------
 + 0.0.1       Initial README.md, package.json, index.html, -4.js
 + 0.0.2       Proper homepage link
++ 0.0.3       Initial npm publish
