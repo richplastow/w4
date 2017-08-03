@@ -1,6 +1,6 @@
 {
   "name": "-4",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A collection of tiny HTML snippets, for seamless web app page loads",
   "main": "-4.js",
   "dependencies": {
@@ -22,5 +22,5 @@
   "bugs": {
     "url": "https://github.com/richplastow/-4/issues"
   },
-  "homepage": "http://richplastow.com/-4/"
+  "homepage": "http://richplastow.github.io/-4/index.html"
 }

@@ -3,6 +3,7 @@ DashFour
 
 #### A collection of tiny HTML snippets, for seamless web app page loads
 
+
 Author
 ------
 Created by Rich Plastow, during development of richplastow.com.
@@ -16,7 +17,7 @@ Created by Rich Plastow, during development of richplastow.com.
 Version
 -------
 + __Last update:__  2017/08/03
-+ __Version:__      0.0.1
++ __Version:__      0.0.2
 
 
 Tested
@@ -33,3 +34,4 @@ Tested
 Changelog
 ---------
 + 0.0.1       Initial README.md, package.json, index.html, -4.js
++ 0.0.2       Proper homepage link
