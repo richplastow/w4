@@ -1,11 +1,12 @@
 w4
 ==
 
-+ __Last update:__  2017/08/03
-+ __Version:__      0.0.7
++ __Last update:__  2017/08/07
++ __Version:__      0.0.8
 
 #### A collection of tiny HTML snippets, for seamless webpage loads
 
++ [a4:](a4.md) Keeps html-tag class names updated with w4 state
 + [b4:](b4.md) Checks that the current browser is supported
 + [i4:](i4.md) Runs a callback when the fonts you specify load
 
@@ -41,3 +42,4 @@ Changelog
 + 0.0.5       With b4, which checks that the current browser is supported
 + 0.0.6       Improved links
 + 0.0.7       With i4, which runs a callback when the fonts you specify load
++ 0.0.8       With a4, which keeps html-tag class names updated with w4 state
