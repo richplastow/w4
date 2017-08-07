@@ -2,7 +2,7 @@ w4
 ==
 
 + __Last update:__  2017/08/07
-+ __Version:__      0.0.8
++ __Version:__      0.0.9
 
 #### A collection of tiny HTML snippets, for seamless webpage loads
 
@@ -43,3 +43,4 @@ Changelog
 + 0.0.6       Improved links
 + 0.0.7       With i4, which runs a callback when the fonts you specify load
 + 0.0.8       With a4, which keeps html-tag class names updated with w4 state
++ 0.0.9       a4 has CustomEvent polyfill for IE

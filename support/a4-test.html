@@ -3,21 +3,10 @@
 <head>
 <meta charset="utf-8">
 
-<!-- Polyfill CustomEvent for IE9+. richplastow.com/support/CustomEventIE.md -->
+<!-- Polyfill CustomEvent for IE9+                    richplastow.com/w4/#a4 -->
 <script>!function(W,C,P){/^f/.test(typeof W[C])?0:(W[C]=function(e,p,_){p=p||{}
 _=document.createEvent(C);_.initCustomEvent(e,!!p.bubbles,!!p.cancelable,
 p.detail);return _},W[C][P]=Event[P])}(this,'CustomEvent','prototype')</script>
-
-<!-- Replace `<html class="i4">` with "i4-", and then "i4-ok" or "i4-fail" -->
-<script>/*!function(c,R,A,I){function l(n,t){addEventListener(t,function(){c[R](
-n+'-');c[A](t)})};c[R](I);c[A](I+'-');l(I,I+'-ok');l(I,I+'-fail')
-}(document.lastChild.classList,'remove','add','i4')*/</script>
-
-<!--
-<script>!function(c,R,A,I){function l(n,t){addEventListener(t,function(){c[R](
-n+'-');c[A](t)})};c[R](I);c[A](I+'-');l(I,I+'-ok');l(I,I+'-fail')
-}(document.lastChild.classList,'remove','add','i4')</script>
--->
 
 <!-- Keep html-tag class names updated with w4 state  richplastow.com/w4/#a4 -->
 <script>
