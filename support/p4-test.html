@@ -1,0 +1,355 @@
+<!DOCTYPE HTML>
+<html class="p4 w4 c4-ep" lang="en-GB">
+<head>
+<meta charset="utf-8">
+
+<!-- Polyfill CustomEvent for IE9+                    richplastow.com/w4/#a4 -->
+<script>!function(W,C,P){/^f/.test(typeof W[C])?0:(W[C]=function(e,p,_){p=p||{}
+_=document.createEvent(C);_.initCustomEvent(e,!!p.bubbles,!!p.cancelable,
+p.detail);return _},W[C][P]=Event[P])}(this,'CustomEvent','prototype')</script>
+
+<!-- Keep html-tag class names updated with w4 state  richplastow.com/w4/#a4 -->
+<script>!function(c){var N={},n,h=t=f=0;for(;n=c.item(h++);)if(/^[a-z]4$/.test(n
+))N[n]=n+'-';function a(h,e){addEventListener(e,function(){if(c.contains(h))t--,
+c.remove(h),c.add(e),f+=/l$/.test(e);if(1==t)dispatchEvent(new CustomEvent('w4-'
++(f?'fail':'ok')))})}for(n in N)t++,c.remove(n),c.add(h=N[n]),a(h,h+'ok'),a(h,h+
+'fail')}(document.lastChild.classList)</script>
+
+<style>
+html {
+    background: #111;
+}
+html h1 {
+    color: #0ff;
+}
+html.p4 h1 {
+    color: #00f;
+}
+html.p4- h1 {
+    color: #f80;
+}
+html.p4-ok h1 {
+    color: #6f0;
+}
+html.p4-fail h1 {
+    color: #f06;
+}
+.progress { height: 8px; background: cyan; }
+html.p4-0  .progress   { width:  0%; }
+html.p4-10 .progress   { width: 10%; }
+html.p4-20 .progress   { width: 20%; }
+html.p4-30 .progress   { width: 30%; }
+html.p4-40 .progress   { width: 40%; }
+html.p4-50 .progress   { width: 50%; }
+html.p4-60 .progress   { width: 60%; }
+html.p4-70 .progress   { width: 70%; }
+html.p4-80 .progress   { width: 80%; }
+html.p4-90 .progress   { width: 90%; }
+html.p4-100 .progress { width: 100%; }
+</style>
+
+
+</head>
+<body>
+
+<!-- Attempt to preload a sequence of asset-bundles   richplastow.com/w4/#p4 -->
+<!--<p id=p4- style="position:fixed;left:-9em;width:9em"></p>--><!-- hid DIV -->
+<script>/* // note that your can change '-9em' to '0', to show the images loading
+!function ( // use a closure to avoid polluting global scope (pre ES6)
+    q // query string to be added to all src’s, eg 'foo=bar&baz=123'
+  , A // progress-bar asset-bundles
+  , Z // post-progress-bar asset-bundles
+      // special keys are 'O', 'F', 'E' and 'T', any other keys are treated as
+      // path-prefixes whose values are arrays of path-suffixes
+) {
+    var a                          // a single asset-bundle
+      , P = []                     // parsed asset-bundles
+      , p                          // a single parsed-asset-bundle
+      , i =                        // iterator, reused for <img> element etc
+        j =                        // second iterator, reused a couple of times
+        G =                        // grand total bytecount, just before loading
+        g = 0                      // running total bytecount still to load
+      , X = clearTimeout           // helps minification
+      , b                          // bytecount, reused a couple of times
+      , k                          // key
+      , n                          // name
+      , d = document               // helps minification
+      , V = 'addEventListener'     // helps minification
+      , c = d.lastChild.classList  // class-attribute api of the <html> element
+      , L = 'p4-'                  // label
+      , C = L+0                    // progress <html> class, 0% is 'p4-0'
+      , w = d.getElementById(L)    // p4’s hidden <p> element
+
+    //// Filter and parse each...
+    for (;a=A[i]; i++) // ...progress-bar asset-bundle, and each...
+        f(a, i)
+    for (;a=(Z||0)[i-A.length]; i++) // ...post progress-bar asset-bundle
+        f(a, i, 1)
+
+    //// Filters and parses a bundle in one of the two `asset-bundles` arrays.
+    function f (a, i, z) { // if `z` is truthy they’re post-progress-bar bundles
+
+        //// Find out whether `a.E`, the environment string, applies here.
+        b = 1 // assume `b` (here, a boolean meaning “use the bundle”) is truthy
+        if (a.E) // if an ‘environment’ string is set, maybe `b` is falsey
+            for (b=j=0; k=a.E[j++];) // get 's', then 'p', from 'sp'
+                b += c.contains('c4-e'+k) // b is truthy if environment matches
+
+        //// Create the parsed-asset-bundle object.
+        P[i] = p = // store the parsed-asset-bundle in `P` (`p` saves bytes)
+            b       // if config-environment is not set, or is and does apply...
+              ? {   // ...init a proper parsed-asset-bundle, else...
+                    B:0        // bytecount
+                  , S:0        // src-count
+                  , T:a.T || 9 // timeout - defaults to 9 seconds if undefined
+                  , O:a.O || 0 // 'ok' callback - and no `p[k][1]` error if `0`
+                  , F: function (e) { // define the fail-handler
+                        X(P[i].R) // clear timeout (can’t capture p)
+                        a.F && a.F(e||a.T) // run bundle’s 'fail' callback
+                        D('fail') // dispatch the 'p4-fail' event
+                        P = 0 // prevent any further preloading
+                    }
+                }
+              : { } // ...just use a minimal object
+        p.I = i // index is needed even if the config-environment does not apply
+
+        //// Parse user input.
+        if (b) // if config-environment is not set, or is set and does apply
+            for (k in a) // step through each folder
+                for (j=0; n=a[k][j++];) // each filename, eg 'img.png:512'
+                    if (n = n.match( // eg `['i.png?x:88','i.','png','?x','88']`
+                        /((.+\.)(png|jpe?g|gif|svg|js))(\?[^:]+)?(:(\d+))?$/i
+                    ) )
+                        b = z // if the bundle is post-progress-bar (in `Z`)...
+                          ? 0 // ...the asset doesn’t contribute to `G`, else...
+                          : +n[6] || 9 // eg 88, or default to a nonzero value
+                      , p[k+n[1]+(n[4]||'')] = [ // eg `p[0]['dir/i.png?x']
+                            b                    // the bytecount, eg 88
+                          , n[3]                 // the extension, eg 'png'
+                        ]
+                      , p.B += b   // increase the asset-bundle’s bytecount
+                      , G = g += b // increase the two bytecount totals
+                      , p.S++      // increment the tally of valid src paths
+    }
+
+    //// Triggers a 'p4-' prefixed event on the window object.
+    function D (n) {
+        dispatchEvent( new CustomEvent(L + n) )
+    }
+
+    //// Renders a given asset-bundle to the hidden DIV.
+    function r (p) { // `p` will be `undefined` after the last bundle
+
+        //// Run when all of a bundle’s assets have loaded.
+        function o () {
+            X(p.R)       // clear the timeout
+            p.O && p.O() // run the bundle’s 'ok' callback, if it has one
+            r(P[p.I+1])  // start loading the next bundle
+        }
+
+        //// Deal with an empty bundle, or reaching the end of the bundle list.
+        p                     // if the asset bundle exists, and...
+          ? p.S               // ...has at least one asset...
+              ?               // ...start waiting to timeout...
+                p.R = setTimeout(p.F, p.T * 1e3) // ...else...
+              :               // ...it has no assets so...
+                o()           // ...start loading the next bundle, else...
+          :                   // ...the asset bundle does not exist so...
+            D('ok')           // ...p4 has loaded all the asset-bundles
+
+        //// Render each asset in the bundle.
+        for (k in p)
+            if (j = p[k][1]) // ignore `B`, `S`, `O`, `F` and `T`
+                i = d.createElement(
+                    'js' == j
+                      ? 'script' // dynamically inserted so async by default
+                      : 'img'
+                )
+              , i[V]('load', function () {
+                    g -= this.p4[0] // reduce the running total bytecount
+                    b = ~~((1 - g / G) * 10) * 10 // 7 of 8: ~~(0.125*10)*10 =10
+                    c.remove(C) // remove the current progress <html> class
+                    c.add(C = L + b) // 0 gives 'p4-0', 10 gives 'p4-100'
+                    --p.S    // countdown - when zero all assets have loaded
+                      ? 0    // do nothing if there’s still assets to load
+                      : o()  // ok - the bundle has completely loaded
+                })
+              , i[V]('error', p.F)
+              , i.p4 = p[k] // handy back-reference
+              , i.src = // the following is short but imperfect: '#'s mess it up
+                    k + (q // `k` is the full path, `q` is optional query-string
+                      ? /\?/.test(k) // if the path contains a '?'...
+                          ? '&' + q  // ...separate it with an '&', else...
+                          : '?' + q  // ...separate it with a '?', but...
+                      : '')          // if there’s no query-string do nothing
+              , i.style.cssText = 'width:9em' // good for debug
+              , w.appendChild(i) // start loading now
+    }
+
+    //// Set the progress bar to 0% and start loading the first asset-bundle.
+    c.add(G ? C : L+100) // 'p4-0', or 'p4-100' if there is nothing to load
+    r(P[0])
+
+}(
+    'defeatcache=' + Math.random() + '&foo=bar' // query string to be added to all src’s
+  , [ // progress-bar asset-bundles
+        { // asset-bundle 0
+           'http://oc3e.com/slooow/img/': [
+               'test-1.png?slooowness=7:1', 'test-2.gif?slooowness=7:1' ]
+          , slooow: [ '/asset/img/test-3.jpg:1' ]
+          , F: function(e) { console.log('progress-bar asset-bundle 0 failed:', e) }
+          , T: 7
+        }
+      , { // asset-bundle 1 is empty, but has a callback
+            O: function() { console.log('progress-bar empty asset-bundle 1 is ok') }
+        }
+      , { // asset-bundle 2 is only for config-environment 'c4-ed'
+            'http://oc3e.com/slooow/src/main/': ['part-1.js?slooowness=3:50000','part-2.js?slooowness=8&abc=123:70000']
+          , O: function() { console.log('development progress-bar asset-bundle 2 is ok') }
+          , E: 'd' // development-environment only - see c4
+        }
+      , { // asset-bundle 3 is only for config-environment 'c4-ep'
+            'http://oc3e.com/slooow/dist/': ['main.min.js?slooowness=5:1412']
+          , O: function() { console.log('production progress-bar asset-bundle 3 is ok') }
+          , E: 'p' // production-environment only - see c4
+        }
+      , { // asset-bundle 4 is only for config-environments 'c4-es' and 'c4-el'
+            'http://oc3e.com/slooow/dist/': ['main.es5.js?slooowness=3:2318']
+          , O: function() { console.log('staging/legacy progress-bar asset-bundle 4 is ok') }
+          , E: 'sl' // staging-environment and legacy-environment only - see c4
+        }
+      , { // asset-bundle 5 is empty
+        }
+      , { // asset-bundle 6
+            '': [ 'http://oc3e.com/slooow/img/test-2.png?slooowness=5:125585' ]
+          , 'nothing': [ ] // empty
+          , O: function() { console.log('progress-bar asset-bundle 6 is ok') }
+          , F: function(e) { console.log('progress-bar asset-bundle 6 failed:', e) }
+        }
+    ]
+  , [ // post-progress-bar asset-bundles
+        { // asset-bundle 0
+           'http://oc3e.com/slooow/img/': [
+               'test-3.png?slooowness=7:134468', 'test-1.gif?slooowness=7:187982' ]
+          , slooow: [ '/asset/img/test-2.jpg:211430' ]
+          , F: function(e) { console.log('post-progress-bar asset-bundle 0 failed:', e) }
+          , T: 7
+        }
+      , { // asset-bundle 1 is empty, but has a callback
+            O: function() { console.log('post-progress-bar empty asset-bundle 1 is ok') }
+        }
+      , { // asset-bundle 2
+            '': [ 'slooow/asset/img/test-2.png:125585' ]
+          , 'nothing': [ ] // empty
+          , O: function() { console.log('post-progress-bar asset-bundle 2 is ok') }
+          , F: function(e) { console.log('post-progress-bar asset-bundle 2 failed:', e) }
+        }
+      , { // asset-bundle 3 is empty
+        }
+    ]
+) // end closure
+*/
+</script>
+
+
+<!-- Attempt to preload a sequence of asset-bundles   richplastow.com/w4/#p4 -->
+<p id=p4- style=position:fixed;left:9em;width:9em></p><script>!function(q,A,Z){
+var a,P=[],p,i=j=G=g=0,X=clearTimeout,b,k,n,d=document,V='addEventListener',c=
+d.lastChild.classList,L='p4-',C=L+0,w=d.getElementById(L);for(;a=A[i];i++)f(a,i)
+for(;a=(Z||0)[i-A.length];i++)f(a,i,1);
+                                       function f(a,i,z){b=1;if(a.E)for(b=j=0;k=
+a.E[j++];)b+=c.contains('c4-e'+k);P[i]=p=b?{B:0,S:0,T:a.T||9,O:a.O||0,F:function
+(e){X(P[i].R);a.F&&a.F(e||a.T);D('fail');P=0}}:{};p.I=i;if(b)for(k in a)for(j=0;
+n=a[k][j++];)if(n=n.match(/((.+\.)(png|jpe?g|gif|svg|js))(\?[^:]+)?(:(\d+))?$/i)
+)b=z?0:+n[6]||9,p[k+n[1]+(n[4]||'')]=[b,n[3]],p.B+=b,G=g+=b,p.S++}
+                                                                  function D(n){
+dispatchEvent(new CustomEvent(L+n))}
+                                    function r(p){p?p.S?p.R=setTimeout(p.F,1e3*p
+.T):o():D('ok');for(k in p)if(j=p[k][1])i=d.createElement('js'==j?'script':'img'
+),i.p4=p[k],i[V]('error',p.F),i[V]('load',function(){g-=this.p4[0];b=~~((1-g/G)*
+10)*10;c.remove(C);c.add(C=L+b);--p.S?0:o()}),i.src=k+(q?/\?/.test(k)?'&'+q:'?'+
+q:''),w.appendChild(i),i.style.cssText='width:9em';function o(){X(p.R);p.O&&p.O(
+);r(P[p.I+1])}}
+               c.add(G?C:L+100);r(P[0])
+                                       }(
+    //// Argument `q` is a query-string appended to all paths. p4 prepends a '?'
+    //// or '&' character as appropriate. Set `q` to the empty-string '' if you
+    //// don’t need it.
+    'defeatcache=' + Math.random() + '&foo=bar'
+
+    //// `A` defines the assets which will be tracked by your progress-bar. It’s
+    //// an array of objects, and each object defines an ‘asset-bundle’. Each
+    //// asset-bundle defines zero or more files to be loaded in any order. When
+    //// all of an asset-bundle’s files have loaded, the next asset-bundle can
+    //// start loading. This makes p4 useful for resolving library dependencies.
+    //// When all of `A`’s asset-bundles have loaded, it adds the class 'p4-100'
+    //// to the <html> element, and then begins loading your post-progress-bar
+    //// asset-bundles (see `Z`, below). Set `A` to an empty array [] if you
+    //// don’t need it.
+  , [
+        { // define the first asset-bundle
+            'http://oc3e.com/slooow/img/': [ // common prefix for these 4 paths
+                'test-1.png?slooowness=3:134468' // `:134468` is the bytesize...
+              , 'test-2.gif?slooowness=5:187982' // ...it’s optional, and...
+              , 'test-3.jpg?slooowness=7:211430' // ...makes the progress bar...
+              , 'test-1.gif?slooowness=8:216889' // ...more accurate
+            ]
+          , '../../js': [ // you can use relative or absolute paths here
+            ] // nothing to load here - p4 will ignore this array
+          , slooow: [ // 'slooow' is the first directory in a relative path
+                '/asset/img/test-2.jpg:198844' // another image file
+              , '/asset/dist/main.min.js:1412' // a JavaScript file
+            ]
+          , O: function() { // asset-bundle success callback - it’s optional
+                console.log('This is a success-callback')
+            }
+          , F: function(e) { // asset-bundle fail callback - also optional
+                console.log('This is a fail-callback:', e) // `e` is numeric...
+            } // ...if the bundle times out, or an Error object if a load fails
+          , T: 20   // allow 20 seconds for this asset-bundle before failing -
+                    // `T` is optional, and defaults to 9 seconds if undefined
+          , E: 'sp' // only use this asset-bundle if the <html> tag’s class
+                    // contains 'c4-es' or 'c4-ep' (staging and production) -
+                    // `E` is optional, if missing the bundle is always used
+        }
+      , { // the second asset-bundle has no assets to load, but has callbacks
+            O: function() {
+                console.log('Called unless the first asset-bundle failed')
+            }
+          , F: function() {
+                console.log('Can never be called!')
+            }
+        }
+      , { // the third asset-bundle is empty - does not cause any problems
+        }
+    ]
+    //// `Z` defines the assets which will be loaded after your progress-bar has
+    //// reached 100%. It has exactly the same API and functionality as `A` (see
+    //// above). The post-progress-bar assets’ bytesize isn’t used for anything
+    //// so there’s no point adding it to the filenames. Typically you’ll be
+    //// loading “nice to have” assets here - high-resolution images that the
+    //// end user may see later on. When all of `Z`’s asset-bundles have loaded,
+    //// it triggers the 'p4-ok' event on the window. You can leave out `Z` if
+    //// you don’t need it.
+  , [
+        { // again, an asset-bundle can have no assets to load
+            T:1, E:'d' // ignored, because this asset-bundle has no assets!
+        }
+      , { // second post-progress-bar asset-bundle
+            '': [ // empty-string path-prefix doesn’t cause any problems
+                'slooow/asset/dist/main.js:9' // bytesize ignored, post-prog-bar
+              , 'http://oc3e.com/slooow/img/test-3.png?slooowness=7'
+            ]
+          , O: function()  { console.log('This is a success-callback') }
+          , F: function(e) { console.log('This is a fail-callback:', e) }
+          , T: 5
+          // no `E` here, so this asset-bundle is loaded for all environments
+        }
+])</script>
+
+
+<div class="progress"></div>
+<h1>p4 should go from orange to green</h1>
+
+</body>
+</html>

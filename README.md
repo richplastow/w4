@@ -1,14 +1,15 @@
 w4
 ==
 
-+ __Last update:__  2017/08/07
-+ __Version:__      0.0.9
++ __Last update:__  2017/08/10
++ __Version:__      0.0.10
 
 #### A collection of tiny HTML snippets, for seamless webpage loads
 
 + [a4:](a4.md) Keeps html-tag class names updated with w4 state
 + [b4:](b4.md) Checks that the current browser is supported
 + [i4:](i4.md) Runs a callback when the fonts you specify load
++ [p4:](i4.md) Attempts to preload a sequence of asset-bundles
 
 
 Author
@@ -44,3 +45,4 @@ Changelog
 + 0.0.7       With i4, which runs a callback when the fonts you specify load
 + 0.0.8       With a4, which keeps html-tag class names updated with w4 state
 + 0.0.9       a4 has CustomEvent polyfill for IE
++ 0.0.10      With p4, which attempts to preload a sequence of asset-bundles
