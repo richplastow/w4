@@ -2,14 +2,22 @@ w4
 ==
 
 + __Last update:__  2017/08/10
-+ __Version:__      0.0.11
++ __Version:__      0.0.12
 
 #### A collection of tiny HTML snippets, for seamless webpage loads
 
+[Homepage](http://richplastow.com/w4/) &nbsp;
+[GitHub](https://github.com/richplastow/w4) &nbsp;
+[NPM](https://www.npmjs.com/package/w4)
+
 + [a4:](a4.md) Keeps html-tag class names updated with w4 state
+  [test](http://richplastow.com/w4/support/a4-test.html)
 + [b4:](b4.md) Checks that the current browser is supported
+  [test](http://richplastow.com/w4/support/b4-test.html)
 + [i4:](i4.md) Runs a callback when the fonts you specify load
-+ [p4:](i4.md) Attempts to preload a sequence of asset-bundles
+  [test](http://richplastow.com/w4/support/i4-test.html)
++ [p4:](p4.md) Attempts to preload a sequence of asset-bundles
+  [test](http://richplastow.com/w4/support/p4-test.html)
 
 
 Author
@@ -47,3 +55,4 @@ Changelog
 + 0.0.9       a4 has CustomEvent polyfill for IE
 + 0.0.10      With p4, which attempts to preload a sequence of asset-bundles
 + 0.0.11      Added .npmignore for slimline NPM package
++ 0.0.12      Minor text amends
