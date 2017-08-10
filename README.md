@@ -2,7 +2,7 @@ w4
 ==
 
 + __Last update:__  2017/08/10
-+ __Version:__      0.0.10
++ __Version:__      0.0.11
 
 #### A collection of tiny HTML snippets, for seamless webpage loads
 
@@ -46,3 +46,4 @@ Changelog
 + 0.0.8       With a4, which keeps html-tag class names updated with w4 state
 + 0.0.9       a4 has CustomEvent polyfill for IE
 + 0.0.10      With p4, which attempts to preload a sequence of asset-bundles
++ 0.0.11      Added .npmignore for slimline NPM package
