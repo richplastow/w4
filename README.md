@@ -1,8 +1,8 @@
 w4
 ==
 
-+ __Last update:__  2017/08/10
-+ __Version:__      0.0.12
++ __Last update:__  2017/08/12
++ __Version:__      0.0.13
 
 #### A collection of tiny HTML snippets, for seamless webpage loads
 
@@ -56,3 +56,4 @@ Changelog
 + 0.0.10      With p4, which attempts to preload a sequence of asset-bundles
 + 0.0.11      Added .npmignore for slimline NPM package
 + 0.0.12      Minor text amends
++ 0.0.13      Minor text amends
