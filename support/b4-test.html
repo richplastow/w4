@@ -1,93 +1,148 @@
 <!DOCTYPE HTML>
-<html lang="en-GB">
+<html class="a4 b4 w4" lang="en-GB">
 <head>
 <meta charset="utf-8">
 
+<!-- Polyfill CustomEvent for IE9+                    richplastow.com/w4/#a4 -->
+<script>!function(W,C,P){/^f/.test(typeof W[C])?0:(W[C]=function(e,p,_){p=p||{}
+_=document.createEvent(C);_.initCustomEvent(e,!!p.bubbles,!!p.cancelable,
+p.detail);return _},W[C][P]=Event[P])}(this,'CustomEvent','prototype')</script>
 
-<!-- b4 = [supported, namecode, version, guicode]   richplastow.com/w4/b4.md -->
-<script>/*
-!function ( // use a closure to avoid polluting global scope (pre ES6)
-    V // the string ' Version/'
-  , u // the user-agent string, from `navigator.userAgent`
-  , G // the global scope object
-  , M // space-delimited string defining browser namecodes and minimum-versions
+<!-- Keep html-tag class names updated with w4 state  richplastow.com/w4/#a4 -->
+<script>!function(c){var N={},n,h=t=f=0;for(;n=c.item(h++);)if(/^[a-z]4$/.test(n
+))N[n]=n+'-';function a(h,e){addEventListener(e,function(){if(c.contains(h))t--,
+c.remove(h),c.add(e),f+=/l$/.test(e);if(1==t)dispatchEvent(new CustomEvent('w4-'
++(f?'fail':'ok')))})}for(n in N)t++,c.remove(n),c.add(h=N[n]),a(h,h+'ok'),a(h,h+
+'fail')}(document.lastChild.classList)</script>
+
+
+<!-- b4 = [supported, namecode, version, hardwarecode]   richplastow.com/w4/b4.md -->
+<script>
+// !function ( // use a closure to avoid polluting global scope (pre ES6)
+window.b4 = function ( // for testing, below
+    u // the user-agent string, from `navigator.userAgent`
+  , H // the <html> element
+  , L // levels of support - an array of space-delimited strings, where each
+      // string represents an ascending level of support
 ) {
-    var c // namecode - one of b, u, e, o, c, f, i, a, s, x
+    var V = ' Version/' // the string ' Version/' - helps minimise bytes
+      , c // namecode - one of b, u, e, o, c, f, i, a, s, x
       , p // part-index, eg 'OPiOS/|OPR/|Opera/' has three parts
-      , i // index of browser name - then reused to mean ‘is not supported’
-      , j // index of 'Version/'
+      , i // index of user agent name - then reused for ‘level of support’
+      , j // index of 'Version/' - then reused to hold a space-delimited string
       , k // index of the start of the version
       , n // name, will be 'u' fo 'unknown' by default
       , v // version, will be 0 if the version cannot be determined
-      , m // an individual minimum browser version
+      , m // an individual minimum user agent version
 
-        //// Define the namecodes.
+        //// Define the namecodes. @TODO ‘mini’ browsers are 'm'
       , N = {
-            b: 'msungBrowser/'      // samsung browser
-          , e: ' Edge/'             // edge
-          , u: ' UCBrowser/'        // uc browser
-          , o: 'OPiOS/|OPR/|Opera/' // opera
-          , c: 'CriOS/|Chrome/'     // chrome
-          , f: 'FxiOS/|Firefox/'    // firefox
-          , i: 'rv:|MSIE |Trident/' // ie
-          , a: 'Android '           // android browser
-          , s: 'afari/'             // safari
+            b: 'msungBrowser/'      // Samsung browser
+          , e: ' Edge/'             // Microsoft Edge
+          , u: ' UCBrowser/'        // UC Browser
+          , o: 'OPiOS/|OPR/|Opera/' // Opera
+          , c: 'CriOS/|Chrome/'     // Chrome
+          , f: 'FxiOS/|Firefox/'    // Firefox
+          , i: 'rv:|MSIE |Trident/' // Internet Explorer
+          , a: 'Android '           // The Android Browser
+          , s: 'afari/'             // Safari
           , x: V + '| OS '          // unknown user-agent
         }
 
-    //// Get the current browser’s namecode.
-    B: // label, to break out of the two-level loop
-    for (c in N) { // `c` is each namecode
-        for (p=0; n=N[c].split('|')[p++];) // `n` is 'OPiOS/', then 'OPR/' etc
+        //// Define the OScodes.
+      , O = {
+            x: 'Windows Phone'      //
+          , a: 'Android'            //
+          , i: 'iOS|iPh|iPo|iPa'    //
+          , m: 'Mac OS X'           //
+          , l: 'X11'                // Linux
+          , w: 'Windows'            //
+        }
+
+    //// Get the user agent’s OScode.
+    B: // second label, to break out of the two-level loop
+    for (o in O) { // `o` is each OScode
+        for (p=0; n=O[o].split('|')[p++];) // `n` is 'iOS', then 'iPh' etc
             if ( 0 <= (i=u.indexOf(n)) ) break B // if found, `i` is start-index
     }
 
-    //// Get the current browser’s version.
+    //// Get the user agent’s namecode.
+    A: // first label, to break out of the two-level loop
+    for (c in N) { // `c` is each namecode
+        for (p=0; n=N[c].split('|')[p++];) // `n` is 'OPiOS/', then 'OPR/' etc
+            if ( 0 <= (i=u.indexOf(n)) ) break A // if found, `i` is start-index
+    }
+
+    //// Get the user agent’s version.
     k = // find it after ' Version/' if available, except on Chrome or Android
         0 <= (j=u.indexOf(V)) && 'c' != c && 'a' != c ? j + 9
       : i + n.length
     v = n ? +u.slice(k).match(/^\d+/) : 0
 
-    //// Determine whether the current browser meets minimum spec.
-    for (i=p=0; m=M.split(' ')[p++];) // 'o10 c15 f3' becomes 'o10', 'c15', 'f3'
-        if (c == m.charAt(0) // found a matching namecode...
-         && v < m.slice(1) ) // ...whose version is too low (coerce str to num)
-            i = 1            // so ‘is not supported’ is true
+    //// Determine the level at which the current user agent supported.
+    C: // third label, to break out of the two-level loop
+    for (i=0;j=L[i];i++) // step through each level
+        for (p=0; m=j.split(' ')[p++];) // 'o10 c15' becomes 'o10', 'c15'
+            if (c == m.charAt(0) // found a matching namecode, whose...
+             && v < m.slice(1) ) // ...version is too low (coerce str to num)
+                break C          // so the ua is not supported at this level
 
-    //// Add the `b4` array to the global scope object.
-    G.b4 = [
-        !i // `true` if the browser is supported, `false` if not
-      , c  // the namecode, one of b, u, e, o, c, f, i, a, s, x
-      , v // the major-version, recorded as an integer (zero means unknown)
-      , /bot|crawl|spider/i.test(u) ? 'b' // guicode 'b' if bot
-          : /iP[aho]|Mobile|Tablet/.test(u) ? 'm' : 'd' // mobile or desktop
-    ] // '/bot|crawl|spider/i' is a reduction of stackoverflow.com/a/20084661
-
-}(
-    ' Version/' // helps minimise bytes
-  , navigator.userAgent // user-agent string
-  , window // it’s usual to specify `window` as b4’s global scope object
-  , 'b3 u10 e14 o10 c15 f3 i6 a2 s4 x0' // minimum user-agent versions
-) // end closure
-*/</script>
+    //// Add the various `b4` classes to the <html> element.
+    //// '/bot|crawl|spider/i' is a reduction of stackoverflow.com/a/20084661
+    H.className += // `classList` is not supported in older user agents
+        [   null    // makes `join()` add a ' b4-' in here
+          , 'l' + i // `l` is 0 if the user agent is completely unsupported
+          , 'n' + c // the namecode, one of b, u, e, o, c, f, i, a, s, x
+          , 'v' + v // major-version, recorded as an integer (0 means unknown)
+          , 'h' + (/bot|crawl|spider/i.test(u) ? 'b' // hardwarecode 'b' if bot
+            : /iP[ho]|Mobile/.test(u)          ? 'p' // phone (or iPod Touch)
+            : /iPa|Tablet/.test(u)             ? 't' // tablet
+            :                                    'd' // desktop
+          )
+          , 'o' + o // operating system, one of a, i, l, m, w, x
+        ].join(' b4-')
 
 
-<!-- b4 = [supported, namecode, version, guicode]   richplastow.com/w4/b4.md -->
-<script>!function (V,u,G,M){var c,p,i,j,k,n,v,m,N={b:'msungBrowser/',e:' Edge/',
+    //// Trigger success of failure - a4 converts this to an <html> class.
+    dispatchEvent( // you can `addEventListener()` for two events...
+        new CustomEvent(
+            'b4-' + (i ? 'fail' : 'ok') // ...'b4-fail' and 'b4-ok'
+        ) // `i` is `true` if the user agent is supported, `false` if not
+    )
+
+}
+// (
+//     navigator.userAgent // user-agent string
+//   , document.lastChild // b4 uses this to modify the class attribute
+//   , 'b3 u10 e14 o10 c15 f300 i6 a2 s4 x0' // minimum versions fully supported
+//   , 'b3 u10 e14 o10 c15 f3 i6 a2 s4 x0' // minimum versions for legacy mode
+// ) // end closure
+</script>
+
+
+<!-- b4 = [supported, namecode, version, hardwarecode]   richplastow.com/w4/b4.md -->
+<script>/*!function (V,u,G,M){var c,p,i,j,k,n,v,m,N={b:'msungBrowser/',e:' Edge/',
 u:' UCBrowser/',o:'OPiOS/|OPR/|Opera/',c:'CriOS/|Chrome/',f:'FxiOS/|Firefox/',i:
 'rv:|MSIE |Trident/',a:'Android ',s:'afari/',x:V+'| OS '};B:for(c in N)for(p=0;n
 =N[c].split('|')[p++];)if(0<=(i=u.indexOf(n)))break B;k=0<=(j=u.indexOf(V))&&'c'
 !=c&&'a'!=c?j+9:i+n.length;v=n?+u.slice(k).match(/^\d+/):0;for(i=p=0;m=M.split(
 ' ')[p++];)if(c==m.charAt(0)&&v<m.slice(1))i=1;G.b4=[!i,c,v,/bot|crawl|spider/i
 .test(u)?'b':/iP[aho]|Mobile|Tablet/.test(u)?'m':'d']}(' Version/',navigator
-.userAgent,window,'b3 u10 e14 o10 c15 f3 i6 a2 s4 x0')</script>
+.userAgent,window,'b3 u10 e14 o10 c15 f3 i6 a2 s4 x0')*/</script>
 
 <style>
 html {
     background: #111;
+    color: #eee;
 }
-html h1 {
-    color: #0ff;
+p {
+    margin: 0;
+}
+.ok {
+    color: #0f8;
+}
+.fail {
+    color: #f08;
 }
 </style>
 
@@ -95,14 +150,131 @@ html h1 {
 </head>
 <body>
 
-<h1 id="b4-out">Loading...</h1>
+<div id="b4-out"></div>
 
-<script>
-document.getElementById('b4-out').innerHTML =
-    b4
-  + '<br>'
-  + (b4[0] ? 'Browser is OK!' : 'Browser not supported.')
-  + '<br><br>'
+<script>!function () {
+
+//// Begin unit tests.
+var b4 = window.b4
+  , $out = document.getElementById('b4-out')
+  , html
+  , ok
+
+$out.innerHTML += '<p>' + navigator.userAgent + '</p><br><br>'
+
+function test (title, expect, ua, S, L) {
+    html = { className: '' }
+    b4(ua, html, S, L)
+    ok = expect === html.className
+    $out.innerHTML +=
+        '<p class="'
+      + (ok ? 'ok' : 'fail')
+      + '">'
+      + title
+      + ': '
+      + (ok ? '' : '<br>')
+      + (ok ? '' : '<tt class="ok">' + expect + '</tt><br>')
+      + '<tt>'
+      + html.className
+      + '</tt></p>'
+}
+
+$out.innerHTML += 'Browsers on my Mac, 2017/08/12'
+
+test(
+    'OS X, Firefox 54'
+  , ' b4-l2 b4-nf b4-v54 b4-hd b4-om'
+  , "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:54.0) Gecko/20100101 Firefox/54.0"
+  , ['f3','f54','f55']
+)
+
+$out.innerHTML += 'All Browserstack IE and Edge'
+
+test(
+    'Windows XP, Internet Explorer 6'
+  , ' b4-l2 b4-ni b4-v6 b4-hd b4-ow'
+  , "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022)"
+  , ['i3','i6','i7']
+)
+test(
+    'Windows XP, Internet Explorer 7'
+  , ' b4-l2 b4-ni b4-v7 b4-hd b4-ow'
+  , "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022)"
+  , ['i3','i7','i8']
+)
+test(
+    'Windows XP, Internet Explorer 8'
+  , ' b4-l2 b4-ni b4-v8 b4-hd b4-ow'
+  , "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022)"
+  , ['i3','i8','i9']
+)
+test(
+    'Windows 7, Internet Explorer 9'
+  , ' b4-l2 b4-ni b4-v9 b4-hd b4-ow'
+  , "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)"
+  , ['i3','i9','i10']
+)
+test(
+    'Windows 7, Internet Explorer 10'
+  , ' b4-l2 b4-ni b4-v10 b4-hd b4-ow'
+  , "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)"
+  , ['i3','i10','i11']
+)
+test(
+    'Windows 8, Internet Explorer 10'
+  , ' b4-l2 b4-ni b4-v10 b4-hd b4-ow'
+  , "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0; .NET4.0E; .NET4.0C; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729)"
+  , ['i3','i10','i11']
+)
+test(
+    'Windows 8 Metro, Internet Explorer 10'
+  , ' b4-l2 b4-ni b4-v10 b4-hd b4-ow'
+  , "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Win64; x64; Trident/6.0; .NET4.0E; .NET4.0C; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET CLR 2.0.50727)"
+  , ['i3','i10','i11']
+)
+test(
+    'Windows 7, Internet Explorer 11'
+  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E; rv:11.0) like Gecko"
+  , ['i3','i11','i12']
+)
+test(
+    'Windows 8.1 Metro, Internet Explorer 11'
+  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , "Mozilla/5.0 (Windows NT 6.3; Win64; x64; Trident/7.0; .NET4.0E; .NET4.0C; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET CLR 2.0.50727; rv:11.0) like Gecko"
+  , ['i3','i11','i12']
+)
+test(
+    'Windows 8.1, Internet Explorer 11'
+  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; .NET4.0E; .NET4.0C; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; rv:11.0) like Gecko"
+  , ['i3','i11','i12']
+)
+test(
+    'Windows 10, Internet Explorer 11'
+  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; rv:11.0) like Gecko"
+  , ['i3','i11','i12']
+)
+test(
+    'Edge 14, Internet Explorer 11'
+  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393"
+  , ['i3','i11','i12']
+)
+test(
+    'Edge 15, Internet Explorer 11'
+  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063"
+  , ['i3','i11','i12']
+)
+
+$out.innerHTML += 'Earliest non-IE Browserstack browsers which work'
+
+
+$out.innerHTML += 'Newest Browserstack browsers which <em>don’t</em> work'
+
+}()
 </script>
 
 </body>

@@ -2,7 +2,7 @@ w4
 ==
 
 + __Last update:__  2017/08/12
-+ __Version:__      0.0.13
++ __Version:__      0.0.14
 
 #### A collection of tiny HTML snippets, for seamless webpage loads
 
@@ -57,3 +57,4 @@ Changelog
 + 0.0.11      Added .npmignore for slimline NPM package
 + 0.0.12      Minor text amends
 + 0.0.13      Minor text amends
++ 0.0.14      b4 outputs to <html class="...">, not window.b4
