@@ -8,5 +8,8 @@ Thumbs.db
 .svn
 .cvs
 
+# Misc
+ARCHIVE
+
 # NPM only
 support/slooow

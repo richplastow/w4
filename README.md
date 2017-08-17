@@ -1,10 +1,10 @@
 w4
 ==
 
-+ __Last update:__  2017/08/12
-+ __Version:__      0.0.14
++ __Last update:__  2017/08/17
++ __Version:__      0.0.15
 
-#### A collection of tiny HTML snippets, for seamless webpage loads
+#### A collection of HTML snippets, for seamless webpage loads
 
 [Homepage](http://richplastow.com/w4/) &nbsp;
 [GitHub](https://github.com/richplastow/w4) &nbsp;
@@ -12,7 +12,7 @@ w4
 
 + [a4:](a4.md) Keeps html-tag class names updated with w4 state
   [test](http://richplastow.com/w4/support/a4-test.html)
-+ [b4:](b4.md) Checks that the current browser is supported
++ [b4:](b4.md) Checks whether the current browser is supported
   [test](http://richplastow.com/w4/support/b4-test.html)
 + [i4:](i4.md) Runs a callback when the fonts you specify load
   [test](http://richplastow.com/w4/support/i4-test.html)
@@ -58,3 +58,4 @@ Changelog
 + 0.0.12      Minor text amends
 + 0.0.13      Minor text amends
 + 0.0.14      b4 outputs to <html class="...">, not window.b4
++ 0.0.15      b4 has new class-names and lots of unit tests

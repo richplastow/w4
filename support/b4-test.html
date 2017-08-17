@@ -1,12 +1,7 @@
-<!DOCTYPE HTML>
+f<!DOCTYPE HTML>
 <html class="a4 b4 w4" lang="en-GB">
 <head>
 <meta charset="utf-8">
-
-<!-- Polyfill CustomEvent for IE9+                    richplastow.com/w4/#a4 -->
-<script>!function(W,C,P){/^f/.test(typeof W[C])?0:(W[C]=function(e,p,_){p=p||{}
-_=document.createEvent(C);_.initCustomEvent(e,!!p.bubbles,!!p.cancelable,
-p.detail);return _},W[C][P]=Event[P])}(this,'CustomEvent','prototype')</script>
 
 <!-- Keep html-tag class names updated with w4 state  richplastow.com/w4/#a4 -->
 <script>!function(c){var N={},n,h=t=f=0;for(;n=c.item(h++);)if(/^[a-z]4$/.test(n
@@ -16,7 +11,7 @@ c.remove(h),c.add(e),f+=/l$/.test(e);if(1==t)dispatchEvent(new CustomEvent('w4-'
 'fail')}(document.lastChild.classList)</script>
 
 
-<!-- b4 = [supported, namecode, version, hardwarecode]   richplastow.com/w4/b4.md -->
+<!-- Determine browser’s support level.    richplastow.com/w4#b4  2017/08/17 -->
 <script>
 // !function ( // use a closure to avoid polluting global scope (pre ES6)
 window.b4 = function ( // for testing, below
@@ -25,110 +20,196 @@ window.b4 = function ( // for testing, below
   , L // levels of support - an array of space-delimited strings, where each
       // string represents an ascending level of support
 ) {
-    var V = ' Version/' // the string ' Version/' - helps minimise bytes
-      , c // namecode - one of b, u, e, o, c, f, i, a, s, x
-      , p // part-index, eg 'OPiOS/|OPR/|Opera/' has three parts
+    //// Prevent leading 'Mozilla/5.0' from being parsed as the version,
+    //// unless all else fails.
+    u = u.replace('ozilla/','ozilla-')
+
+    var p // platform code - one of a, i, l, m, w, _
+      , c // name code     - one of b, e, u, l, m, o, c, f, i, a, s, _
+      , t // part-index, eg 'OPiOS/|OPR/|Opera/' has three parts
       , i // index of user agent name - then reused for ‘level of support’
       , j // index of 'Version/' - then reused to hold a space-delimited string
       , k // index of the start of the version
-      , n // name, will be 'u' fo 'unknown' by default
+      , n // matching name string, eg 'msungBrowser/'
       , v // version, will be 0 if the version cannot be determined
       , m // an individual minimum user agent version
+      , V = ' Version/' // helps minimise bytes
+      , M = 'match'     // helps minimise bytes
+      , C = this.CustomEvent
 
-        //// Define the namecodes. @TODO ‘mini’ browsers are 'm'
-      , N = {
-            b: 'msungBrowser/'      // Samsung browser
-          , e: ' Edge/'             // Microsoft Edge
-          , u: ' UCBrowser/'        // UC Browser
-          , o: 'OPiOS/|OPR/|Opera/' // Opera
-          , c: 'CriOS/|Chrome/'     // Chrome
-          , f: 'FxiOS/|Firefox/'    // Firefox
-          , i: 'rv:|MSIE |Trident/' // Internet Explorer
-          , a: 'Android '           // The Android Browser
-          , s: 'afari/'             // Safari
-          , x: V + '| OS '          // unknown user-agent
-        }
+    //// Get `p`, the user agent’s platform.
+    f({
+        w: 'indows|; Win|(Win'  //
+      , a: 'Android'            //
+      , i: 'iOS|iPh|iPo|iPa'    //
+      , m: 'Mac OS X'           //
+      , l: 'X11|Linux'          // Linux
+      , _: ' '                  // platform not recognised
+    })
+    p = c
 
-        //// Define the OScodes.
-      , O = {
-            x: 'Windows Phone'      //
-          , a: 'Android'            //
-          , i: 'iOS|iPh|iPo|iPa'    //
-          , m: 'Mac OS X'           //
-          , l: 'X11'                // Linux
-          , w: 'Windows'            //
-        }
+    //// Get `n`, the user agent’s namecode.
+    f({
+        b: 'ungBr|SAMSU'        // Samsung browser
+      , e: ' Edge/'             // Microsoft Edge
+      , u: ' UCBr'              // UC Browser
+      , l: 'Links (|Lynx/'      // Various ‘textmode’ user-agents
+      , m: 'Opera Mi'           // Opera Mini
+      , o: 'OPiOS/|OPR/|Opera/|Opera ' // Opera
+      , c: 'CriOS/|Chrome/'     // Chrome
+      , f: 'FxiOS/|Firefox/'    // Firefox
+      , i: 'MSIE |Trident'      // Internet Explorer (use 'rv:' to get v)
+      , a: 'Android '           // Android Webkit Browser
+      , s: 'Safari/|ebKit/'     // Safari
+      , _: '/v|' + V            // name not recognised
+    })
 
-    //// Get the user agent’s OScode.
-    B: // second label, to break out of the two-level loop
-    for (o in O) { // `o` is each OScode
-        for (p=0; n=O[o].split('|')[p++];) // `n` is 'iOS', then 'iPh' etc
-            if ( 0 <= (i=u.indexOf(n)) ) break B // if found, `i` is start-index
-    }
-
-    //// Get the user agent’s namecode.
-    A: // first label, to break out of the two-level loop
-    for (c in N) { // `c` is each namecode
-        for (p=0; n=N[c].split('|')[p++];) // `n` is 'OPiOS/', then 'OPR/' etc
-            if ( 0 <= (i=u.indexOf(n)) ) break A // if found, `i` is start-index
-    }
+    //// if 'Trident', use 'rv:' to get the version.
+    if ('Trident' == n)
+        i = u.indexOf('rv:') - 4 // `4` is 'Trident'.length - 'rv:'.length
 
     //// Get the user agent’s version.
-    k = // find it after ' Version/' if available, except on Chrome or Android
-        0 <= (j=u.indexOf(V)) && 'c' != c && 'a' != c ? j + 9
-      : i + n.length
-    v = n ? +u.slice(k).match(/^\d+/) : 0
+    k = // find it after ' Version/' if available, unless Op’Mini/Chrome/Android
+        0 <= (j=u.indexOf(V)) && ! c[M](/[mca]/) ? j + 9
+      : n ? i + n.length : i
+    if (n) v = u.slice(k)[M](/^\s|\d+/) // get digits after matched string
+    v = null != v // found '123' or ' ' after matched string...
+      ? +v // ...so convert it to a number (note, 'Chrome/ ' is version `0`)
+      : (j = u[M](/[:\/]\d+\.\d+/g)) // else get each ':12.3' or '/4.56'
+          ? +j.pop()[M](/\d+/) // use first digit from last occurance, else
+          : (j = u[M](/[- v]\d+\.\d+/g)) // get each '-1.2', ' 3.4', 'v5.6'
+              ? +j.pop()[M](/\d+/) // use first digit from last occurance
+              : 0
+
+    //// Convert a WebKit version to a Safari version (updated July 19 2017).
+    // 1  / 85       to 312.6
+    // 2  / 412      to 419.3
+    // 3  / 420      to 525.29.1
+    // 4  / 526.11.2 to 533.19.4
+    // 5  / 533.16   to 534.59.10
+    // 6  / 536.25   to 537.85.17
+    // 7  / 537.71   to 537.85.17
+    // 8  / 538.35.8 to 600.7.12
+    // 9  / 601.1.56 to 601.7.8
+    // 10 / 602.1.50 to 603.3.8
+    if ('s' == c && 84 < v)
+        for (t=v,k=v=0; t>k; k+=([411,8,106,7,3,1,1,63,1][v++])); // same as...
+        // for (t=v,v=0; t>[0,411,419,525,532,535,536,537,600,601][++v];);
 
     //// Determine the level at which the current user agent supported.
-    C: // third label, to break out of the two-level loop
+    B: // break-label, to break out of the two-level loop
     for (i=0;j=L[i];i++) // step through each level
-        for (p=0; m=j.split(' ')[p++];) // 'o10 c15' becomes 'o10', 'c15'
+        for (t=0; m=j.split(' ')[t++];) // 'o10 c15' becomes 'o10', 'c15'
             if (c == m.charAt(0) // found a matching namecode, whose...
              && v < m.slice(1) ) // ...version is too low (coerce str to num)
-                break C          // so the ua is not supported at this level
+                break B          // so the ua is not supported at this level
+
+    //// Finds OScode and namecode.
+    function f (X) {
+        for (c in X) // `x` is each code
+            for (t=0; n=X[c].split('|')[t++];) // `n` is 'iOS', then 'iPh' etc
+                if ( 0 <= (i=u.indexOf(n)) ) // if found, `i` is start-index
+                    return
+    }
 
     //// Add the various `b4` classes to the <html> element.
     //// '/bot|crawl|spider/i' is a reduction of stackoverflow.com/a/20084661
     H.className += // `classList` is not supported in older user agents
         [   null    // makes `join()` add a ' b4-' in here
-          , 'l' + i // `l` is 0 if the user agent is completely unsupported
-          , 'n' + c // the namecode, one of b, u, e, o, c, f, i, a, s, x
+          , 's' + i // "b4s0" if the user agent is completely unsupported
+          ,       c // the name code, one of b, e, u, l, m, o, c, f, i, a, s, _
           , 'v' + v // major-version, recorded as an integer (0 means unknown)
-          , 'h' + (/bot|crawl|spider/i.test(u) ? 'b' // hardwarecode 'b' if bot
-            : /iP[ho]|Mobile/.test(u)          ? 'p' // phone (or iPod Touch)
-            : /iPa|Tablet/.test(u)             ? 't' // tablet
+          , 'd' + ( // the device code, one of b, d, g, t
+              'm' == c                               // Opera Mini
+                                               ? 't' // phone or tablet
+            : u[M](/bot|crawl|spide|searc|okext/i)
+                                               ? 'b' // hardwarecode 'b' if bot
+            : u[M](/Ninte|PS[P3]|YSTA|ySta|Xbo/)
+                                               ? 'g' // games console
+            : u[M](/iP[aho]|[Tt]ablet|Android|Mobile|ckBer|Nokia|Symb[iO]| UP\.Br|NetFron|J2ME|SonyEr/)
+// Symbian, SymbianOS, SymbOS
+                                               ? 't' // phone or tablet
             :                                    'd' // desktop
           )
-          , 'o' + o // operating system, one of a, i, l, m, w, x
-        ].join(' b4-')
-
+          , 'p' + p // platform, one of a, i, l, m, w, _
+        ].join(' b4')
 
     //// Trigger success of failure - a4 converts this to an <html> class.
-    dispatchEvent( // you can `addEventListener()` for two events...
-        new CustomEvent(
-            'b4-' + (i ? 'fail' : 'ok') // ...'b4-fail' and 'b4-ok'
-        ) // `i` is `true` if the user agent is supported, `false` if not
-    )
+    if (C)
+        dispatchEvent( // you can `addEventListener()` for two events...
+            new C(
+                'b4-' + (i ? 'ok' : 'fail') // ...'b4-fail' and 'b4-ok'
+            ) // `i` is `true` if the user agent is supported, `false` if not
+        )
 
 }
 // (
 //     navigator.userAgent // user-agent string
 //   , document.lastChild // b4 uses this to modify the class attribute
-//   , 'b3 u10 e14 o10 c15 f300 i6 a2 s4 x0' // minimum versions fully supported
-//   , 'b3 u10 e14 o10 c15 f3 i6 a2 s4 x0' // minimum versions for legacy mode
+//   , 'b3 e14 u10 o10 c15 f300 i6 a2 s4 -0' // minimum versions fully supported
+//   , 'b3 e14 u10 o10 c15 f3 i6 a2 s4 -0' // minimum versions for legacy mode
 // ) // end closure
+
+/*
+            : /iPa|[Tt]ablet|SM-[TP]\d| GT-|S[GC]H-|xus [791]| TF\d/.test(u)
+// Nexus 7, Nexus 9 and Nexus 10 are tablets (Nexus 6 etc are phones)
+// Transformer TF101, ASUS Transformer Pad TF300T
+                                               ? 't' // tablet
+            : /iP[ho]|Mobile|Symb[iO]|Nokia|NetFron|J2ME|SonyEri|ASUS/.test(u)
+                                               ? 'p' // phone (or iPod Touch)
+            : /Android/.test(u)                ? 'a' // non-tablet/phone Android
+*/
 </script>
 
 
-<!-- b4 = [supported, namecode, version, hardwarecode]   richplastow.com/w4/b4.md -->
-<script>/*!function (V,u,G,M){var c,p,i,j,k,n,v,m,N={b:'msungBrowser/',e:' Edge/',
-u:' UCBrowser/',o:'OPiOS/|OPR/|Opera/',c:'CriOS/|Chrome/',f:'FxiOS/|Firefox/',i:
-'rv:|MSIE |Trident/',a:'Android ',s:'afari/',x:V+'| OS '};B:for(c in N)for(p=0;n
-=N[c].split('|')[p++];)if(0<=(i=u.indexOf(n)))break B;k=0<=(j=u.indexOf(V))&&'c'
-!=c&&'a'!=c?j+9:i+n.length;v=n?+u.slice(k).match(/^\d+/):0;for(i=p=0;m=M.split(
-' ')[p++];)if(c==m.charAt(0)&&v<m.slice(1))i=1;G.b4=[!i,c,v,/bot|crawl|spider/i
-.test(u)?'b':/iP[aho]|Mobile|Tablet/.test(u)?'m':'d']}(' Version/',navigator
-.userAgent,window,'b3 u10 e14 o10 c15 f3 i6 a2 s4 x0')*/</script>
+<!-- Determine browser’s support level.    richplastow.com/w4#b4  2017/08/17 -->
+<script>//!function(
+window.b4=
+         function(u,H,L){u=u.replace('ozilla/','ozilla-');var p,c,t,i,j,k,n,v,m,
+V=' Version/',M='match',C=this.CustomEvent
+                                          ;f({w:'indows|; Win|(Win',a:'Android',
+i:'iOS|iPh|iPo|iPa',m:'Mac OS X',l:'X11|Linux',_:' '});p=c
+                                                          ;f({b:'ungBr|SAMSU',e:
+' Edge/',u:' UCBr',l:'Links (|Lynx/',m:'Opera Mi',o:'OPiOS/|OPR/|Opera/|Opera ',
+c:'CriOS/|Chrome/',f:'FxiOS/|Firefox/',i:'MSIE |Tride',a:'Android ',s:'Safari/|'
++'ebKit/',_:'/v|'+V})
+                     ;if('Tride'==n)i=u.indexOf('rv:')-4
+                                                        ;k=0<=(j=u.indexOf(V))&&
+!c[M](/[mca]/)?j+9:n?i+n.length:i;if(n)v=u.slice(k)[M](/^\s|\d+/);v=null!=v?+v:(
+j=u[M](/[:\/]\d+\.\d+/g))?+j.pop()[M](/\d+/):(j=u[M](/[- v]\d+\.\d+/g))?+j.pop()
+[M](/\d+/):0
+            ;if('s'==c&&84<v)for (t=v,k=v=0;t>k;k+=([411,8,106,7,3,1,1,63,1
+][v++]));
+         B:for(i=0;j=L[i];i++)for(t=0;m=j.split(' ')[t++];)if(c==m.charAt(0)&&v<
+m.slice(1))break B
+                  ;function f(X){for(c in X)for(t=0;n=X[c].split('|')[t++];)if(0
+<=(i=u.indexOf(n)))return}
+                          H.className+=[null,'s'+i,c,'v'+v,'d'+('m'==c?'t':u[M](
+/bot|crawl|spide|searc|okext/i)?'b':u[M](/Ninte|PS[P3]|YSTA|ySta|Xbo/)?'g':u[M](
+/iP[aho]|[Tt]able|Android|obile|ckBer|Noki|Symb[iO]| UP\.Br|NetFr|J2ME|SonyEr/)?
+'t':'d'),'p'+p].join(' b4')
+                           ;if(C)dispatchEvent(new C('b4-'+(i?'ok':'fail')))}
+</script>
+
+
+<!-- Determine browser’s support level.    richplastow.com/w4#b4  2017/08/17 -->
+<script>!function(u,H,L){u=u.replace('ozilla/','ozilla-');var p,c,t,i,j,k,n,v,m,
+V=' Version/',M='match',C=this.CustomEvent;f({w:'indows|; Win|(Win',a:'Android',
+i:'iOS|iPh|iPo|iPa',m:'Mac OS X',l:'X11|Linux',_:' '});p=c;f({b:'ungBr|SAMSU',e:
+' Edge/',u:' UCBr',l:'Links (|Lynx/',m:'Opera Mi',o:'OPiOS/|OPR/|Opera/|Opera ',
+c:'CriOS/|Chrome/',f:'FxiOS/|Firefox/',i:'MSIE |Tride',a:'Android ',s:'Safari/|'
++'ebKit/',_:'/v|'+V});if('Tride'==n)i=u.indexOf('rv:')-4;k=0<=(j=u.indexOf(V))&&
+!c[M](/[mca]/)?j+9:n?i+n.length:i;if(n)v=u.slice(k)[M](/^\s|\d+/);v=null!=v?+v:(
+j=u[M](/[:\/]\d+\.\d+/g))?+j.pop()[M](/\d+/):(j=u[M](/[- v]\d+\.\d+/g))?+j.pop()
+[M](/\d+/):0;if('s'==c&&84<v)for (t=v,k=v=0;t>k;k+=([411,8,106,7,3,1,1,63,1
+][v++]));B:for(i=0;j=L[i];i++)for(t=0;m=j.split(' ')[t++];)if(c==m.charAt(0)&&v<
+m.slice(1))break B;function f(X){for(c in X)for(t=0;n=X[c].split('|')[t++];)if(0
+<=(i=u.indexOf(n)))return}H.className+=[null,'s'+i,c,'v'+v,'d'+('m'==c?'t':u[M](
+/bot|crawl|spide|searc|okext/i)?'b':u[M](/Ninte|PS[P3]|YSTA|ySta|Xbo/)?'g':u[M](
+/iP[aho]|[Tt]able|Android|obile|ckBer|Noki|Symb[iO]| UP\.Br|NetFr|J2ME|SonyEr/)?
+'t':'d'),'p'+p].join(' b4');if(C)dispatchEvent(new C('b4-'+(i?'ok':'fail')))}(
+navigator.userAgent,document.lastChild,['b2 e14 o10 c15 f3 i6 a2 s4'])</script>
+
 
 <style>
 html {
@@ -150,15 +231,17 @@ p {
 </head>
 <body>
 
-<div id="b4-out"></div>
+<div id="b4put"></div>
 
 <script>!function () {
 
 //// Begin unit tests.
 var b4 = window.b4
-  , $out = document.getElementById('b4-out')
+  , $out = document.getElementById('b4put')
   , html
   , ok
+  , pass = fail = 0
+  , verbose = false
 
 $out.innerHTML += '<p>' + navigator.userAgent + '</p><br><br>'
 
@@ -166,113 +249,2352 @@ function test (title, expect, ua, S, L) {
     html = { className: '' }
     b4(ua, html, S, L)
     ok = expect === html.className
-    $out.innerHTML +=
-        '<p class="'
-      + (ok ? 'ok' : 'fail')
-      + '">'
-      + title
-      + ': '
-      + (ok ? '' : '<br>')
-      + (ok ? '' : '<tt class="ok">' + expect + '</tt><br>')
-      + '<tt>'
-      + html.className
-      + '</tt></p>'
+    if (ok) pass++; else fail++
+    if (verbose || !ok)
+        $out.innerHTML +=
+            '<p class="'
+          + (ok ? 'ok' : 'fail')
+          + '">'
+          + title
+          + ': '
+          + (ok ? '' : '<br>')
+          + (ok ? '' : '<tt class="ok">' + expect + '</tt><br>')
+          + '<tt>'
+          + html.className
+          + '</tt></p>'
 }
 
-$out.innerHTML += 'Browsers on my Mac, 2017/08/12'
+$out.innerHTML += 'WebKit versions<br>'
+
+test(
+    'WebKit Version 0 (identified as Safari 0)'
+  , ' b4s1 b4s b4v0 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/0"
+  , ['s0']
+)
+test(
+    'WebKit Version 84 (identified as Safari 84 - as expected!)'
+  , ' b4s0 b4s b4v84 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/84"
+  , []
+)
+test(
+    'WebKit Version 85 (identified as Safari 1)'
+  , ' b4s0 b4s b4v1 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/85"
+  , []
+)
+test(
+    'WebKit Version 411 (identified as Safari 1)'
+  , ' b4s0 b4s b4v1 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/411"
+  , []
+)
+test(
+    'WebKit Version 412 (identified as Safari 2)'
+  , ' b4s0 b4s b4v2 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/412"
+  , []
+)
+test(
+    'WebKit Version 419.3 (identified as Safari 2)'
+  , ' b4s0 b4s b4v2 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/419.3"
+  , []
+)
+test(
+    'WebKit Version 420 (identified as Safari 3)'
+  , ' b4s0 b4s b4v3 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/420"
+  , []
+)
+test(
+    'WebKit Version 525.29 (identified as Safari 3)'
+  , ' b4s0 b4s b4v3 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/525.29"
+  , []
+)
+test(
+    'WebKit Version 526.11 (identified as Safari 4)'
+  , ' b4s0 b4s b4v4 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/526.11"
+  , []
+)
+test(
+    'WebKit Version 532 (identified as Safari 4)'
+  , ' b4s0 b4s b4v4 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/532"
+  , []
+)
+test(
+    'WebKit Version 533 (identified as Safari 5)'
+  , ' b4s0 b4s b4v5 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/533"
+  , []
+)
+test(
+    'WebKit Version 535 (identified as Safari 5)'
+  , ' b4s0 b4s b4v5 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/535"
+  , []
+)
+test(
+    'WebKit Version 536 (identified as Safari 6)'
+  , ' b4s0 b4s b4v6 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/536"
+  , []
+)
+test(
+    'WebKit Version 537 (identified as Safari 7)'
+  , ' b4s0 b4s b4v7 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/537"
+  , []
+)
+test(
+    'WebKit Version 538 (identified as Safari 8)'
+  , ' b4s0 b4s b4v8 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/538"
+  , []
+)
+test(
+    'WebKit Version 600.7 (identified as Safari 8)'
+  , ' b4s0 b4s b4v8 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/600.7"
+  , []
+)
+test(
+    'WebKit Version 601 (identified as Safari 9)'
+  , ' b4s0 b4s b4v9 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/601"
+  , []
+)
+test(
+    'WebKit Version 602 (identified as Safari 10)'
+  , ' b4s0 b4s b4v10 b4dd b4p_'
+  , "Mozilla/5.0 WebKit/602"
+  , []
+)
+
+
+$out.innerHTML += 'Browsers on my Mac, 2017/08/12<br>'
 
 test(
     'OS X, Firefox 54'
-  , ' b4-l2 b4-nf b4-v54 b4-hd b4-om'
+  , ' b4s2 b4f b4v54 b4dd b4pm'
   , "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:54.0) Gecko/20100101 Firefox/54.0"
   , ['f3','f54','f55']
 )
 
-$out.innerHTML += 'All Browserstack IE and Edge'
+$out.innerHTML += 'All Browserstack IE and Edge<br>'
 
 test(
     'Windows XP, Internet Explorer 6'
-  , ' b4-l2 b4-ni b4-v6 b4-hd b4-ow'
+  , ' b4s2 b4i b4v6 b4dd b4pw'
   , "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022)"
   , ['i3','i6','i7']
 )
 test(
     'Windows XP, Internet Explorer 7'
-  , ' b4-l2 b4-ni b4-v7 b4-hd b4-ow'
+  , ' b4s2 b4i b4v7 b4dd b4pw'
   , "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022)"
   , ['i3','i7','i8']
 )
 test(
     'Windows XP, Internet Explorer 8'
-  , ' b4-l2 b4-ni b4-v8 b4-hd b4-ow'
+  , ' b4s2 b4i b4v8 b4dd b4pw'
   , "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022)"
   , ['i3','i8','i9']
 )
 test(
     'Windows 7, Internet Explorer 9'
-  , ' b4-l2 b4-ni b4-v9 b4-hd b4-ow'
+  , ' b4s2 b4i b4v9 b4dd b4pw'
   , "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)"
   , ['i3','i9','i10']
 )
 test(
     'Windows 7, Internet Explorer 10'
-  , ' b4-l2 b4-ni b4-v10 b4-hd b4-ow'
+  , ' b4s2 b4i b4v10 b4dd b4pw'
   , "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)"
   , ['i3','i10','i11']
 )
 test(
     'Windows 8, Internet Explorer 10'
-  , ' b4-l2 b4-ni b4-v10 b4-hd b4-ow'
+  , ' b4s2 b4i b4v10 b4dd b4pw'
   , "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0; .NET4.0E; .NET4.0C; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729)"
   , ['i3','i10','i11']
 )
 test(
     'Windows 8 Metro, Internet Explorer 10'
-  , ' b4-l2 b4-ni b4-v10 b4-hd b4-ow'
+  , ' b4s2 b4i b4v10 b4dd b4pw'
   , "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Win64; x64; Trident/6.0; .NET4.0E; .NET4.0C; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET CLR 2.0.50727)"
   , ['i3','i10','i11']
 )
 test(
     'Windows 7, Internet Explorer 11'
-  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , ' b4s2 b4i b4v11 b4dd b4pw'
   , "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E; rv:11.0) like Gecko"
   , ['i3','i11','i12']
 )
 test(
     'Windows 8.1 Metro, Internet Explorer 11'
-  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , ' b4s2 b4i b4v11 b4dd b4pw'
   , "Mozilla/5.0 (Windows NT 6.3; Win64; x64; Trident/7.0; .NET4.0E; .NET4.0C; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET CLR 2.0.50727; rv:11.0) like Gecko"
   , ['i3','i11','i12']
 )
 test(
     'Windows 8.1, Internet Explorer 11'
-  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , ' b4s2 b4i b4v11 b4dd b4pw'
   , "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; .NET4.0E; .NET4.0C; .NET CLR 3.5.30729; .NET CLR 2.0.50727; .NET CLR 3.0.30729; rv:11.0) like Gecko"
   , ['i3','i11','i12']
 )
 test(
+    'Windows Phone 8.1, IE Mobile 11'
+  , ' b4s2 b4i b4v11 b4dt b4pw'
+  , "Mozilla/5.0 (Mobile; Windows Phone 8.1; Android 4.0; ARM; Trident/7.0; Touch; rv:11.0; IEMobile/11.0; Microsoft; Virtual) like iPhone OS 7_0_3 Mac OS X AppleWebKit/537 (KHTML, like Gecko) Mobile Safari/537"
+  , ['i3','i11','i12']
+)
+test(
     'Windows 10, Internet Explorer 11'
-  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+  , ' b4s2 b4i b4v11 b4dd b4pw'
   , "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; rv:11.0) like Gecko"
   , ['i3','i11','i12']
 )
 test(
-    'Edge 14, Internet Explorer 11'
-  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+    'Windows 10, Edge 14'
+  , ' b4s2 b4e b4v14 b4dd b4pw'
   , "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393"
-  , ['i3','i11','i12']
+  , ['e3','e11','e99']
 )
 test(
-    'Edge 15, Internet Explorer 11'
-  , ' b4-l2 b4-ni b4-v11 b4-hd b4-ow'
+    'Windows 10, Edge 15'
+  , ' b4s2 b4e b4v15 b4dd b4pw'
   , "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063"
-  , ['i3','i11','i12']
+  , ['e3','e11','e99']
 )
 
-$out.innerHTML += 'Earliest non-IE Browserstack browsers which work'
+$out.innerHTML += 'Various non-IE Browserstack browsers<br>'
+
+test(
+    'OS X Snow Leopard, Safari 4'
+  , ' b4s2 b4s b4v4 b4dd b4pm'
+  , "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/531.22.7 (KHTML, like Gecko) Version/4.0.5 Safari/531.22.7"
+  , ['s3','s4','s5']
+)
+test(
+    'Windows XP, Safari 4'
+  , ' b4s2 b4s b4v4 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 5.2; en-US) AppleWebKit/531.22.7 (KHTML, like Gecko) Version/4.0.5 Safari/531.22.7"
+  , ['s3','s4','s5']
+)
+test(
+    'Windows XP, Firefox 3.6'
+  , ' b4s2 b4f b4v3 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 5.2; en-US; rv:1.9.2.17) Gecko/20110420 Firefox/3.6.17 (.NET CLR 3.5.21022)"
+  , ['f2','f3','f4']
+)
+test(
+    'Windows XP, Chrome 15'
+  , ' b4s2 b4c b4v15 b4dd b4pw'
+  , "Mozilla/5.0 (Windows NT 5.2) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2"
+  , ['c14','c15','c16']
+)
+test(
+    'Windows XP, Opera 10'
+  , ' b4s3 b4o b4v10 b4dd b4pw'
+  , "Opera/9.80 (Windows NT 5.2; U; en) Presto/2.6.30 Version/10.63"
+  , ['o8','o9','o10']
+)
+test(
+    'Windows XP, Yandex 14'
+  , ' b4s2 b4c b4v38 b4dd b4pw'
+  , "Mozilla/5.0 (Windows NT 5.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122 YaBrowser/14.12.2125.9579 Safari/537.36"
+  , ['c37','c38','c39']
+)
+test(
+    'iOS 3, Safari 4'
+  , ' b4s2 b4s b4v4 b4dt b4pi'
+  , "Mozilla/5.0 (iPhone Simulator; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16"
+  , ['s3','s4','s5']
+)
+test(
+    'iOS 6, UC Browser 10'
+  , ' b4s2 b4u b4v10 b4dt b4pi'
+  , "Mozilla/5.0 (iPhone; CPU iPhone OS 8_1_2 like Mac OS X; en-US) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/12B440 UCBrowser/10.4.0.693 Mobile"
+  , ['u9','u10','u11']
+)
+test(
+    'iOS 7, Chrome (identified as Safari 7)'
+  , ' b4s2 b4s b4v7 b4dt b4pi'
+  , "Mozilla/5.0 (iPad; CPU OS 7_1_1 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Version/7.0 Mobile/11D201 Safari/9537.53"
+  , ['s3','s7','s99']
+)
+test(
+    'iOS 9, Chrome 58'
+  , ' b4s2 b4c b4v58 b4dt b4pi'
+  , "Mozilla/5.0 (iPhone; CPU iPhone OS 9_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/58.0.3029.113 Mobile/13A452 Safari/601.1.46"
+  , ['c3','c58','c99']
+)
+test(
+    'iOS 9, Firefox '
+  , ' b4s2 b4f b4v7 b4dt b4pi'
+  , "Mozilla/5.0 (iPhone; CPU iPhone OS 9_0_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) FxiOS/7.2b2672 Mobile/13A405 Safari/601.1.46"
+  , ['f3','f7','f99']
+)
+test(
+    'Android 2.3, Android Browser 2'
+  , ' b4s2 b4a b4v2 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 2.3.3; en-us; sdk Build/GRI34) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"
+  , ['a1','a2','a3']
+)
+test(
+    'Android 4, Android Browser 4'
+  , ' b4s2 b4a b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 4.0.4; en-us; sdk Build/MR1) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+  , ['a3','a4','a5']
+)
+test(
+    'Android 4, Samsung Browser 1'
+  , ' b4s2 b4b b4v1 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 4.4.2; en-us; SAMSUNG SM-T530 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Version/1.5 Chrome/28.0.1500.94 Safari/537.36"
+  , ['b0','b1','b2']
+)
+test(
+    'Android 4, Firefox'
+  , ' b4s2 b4f b4v51 b4dt b4pa'
+  , "Mozilla/5.0 (Android 4.4.2; Mobile; rv:51.0) Gecko/51.0 Firefox/51.0"
+  , ['f50','f51','f52']
+)
+test(
+    'Android 5, Chrome'
+  , ' b4s2 b4c b4v58 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 5.0.2; XT1068 Build/LXB22.46-28) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.83 Mobile Safari/537.3"
+  , ['c57','c58','c59']
+)
+test(
+    'Android 7, Samsung Browser 5'
+  , ' b4s2 b4b b4v5 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 7.0; SAMSUNG SM-G955F Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/5.2 Chrome/51.0.2704.106 Mobile Safari/537.36"
+  , ['b0','b5','b20']
+)
 
 
-$out.innerHTML += 'Newest Browserstack browsers which <em>don’t</em> work'
+
+
+
+
+
+$out.innerHTML += 'Newest Browserstack browsers which <em>don’t</em> work<br>'
+
+
+$out.innerHTML += 'www.useragentstring.com/pages/useragentstring.php?typ=Browser<br>'
+
+test(
+    'ABrowse 0.6 (identified as Safari 3)'
+  , ' b4s1 b4s b4v3 b4dd b4p_'
+  , "Mozilla/5.0 (compatible; U; ABrowse 0.6; Syllable) AppleWebKit/420+ (KHTML, like Gecko)"
+  , ['_99']
+)
+test(
+    'Acoo Browser (identified as IE 8)'
+  , ' b4s1 b4i b4v8 b4dd b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0; Acoo Browser; GTB6; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; InfoPath.1; .NET CLR 3.5.30729; .NET CLR 3.0.30618)"
+  , ['_99']
+)
+test(
+    'America Online Browser 1.1 (identified as IE 6)'
+  , ' b4s1 b4i b4v6 b4dd b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 6.0; America Online Browser 1.1; rev1.2; Windows NT 5.0; FreeprodTB)"
+  , ['_99']
+)
+test(
+    'AmigaVoyager 2.95 (not recognised, as expected)'
+  , ' b4s0 b4_ b4v2 b4dd b4p_'
+  , "AmigaVoyager/2.95 (compatible; MC680x0; AmigaOS; SV1)"
+  , ['_99']
+)
+test(
+    'AOL 4.0 (identified as IE 6, ‘Mac’ not recognised, as expected)'
+  , ' b4s1 b4i b4v4 b4dd b4p_'
+  , "Mozilla/4.0 (compatible; MSIE 4.01; AOL 4.0; Mac_68K)"
+  , ['_99']
+)
+test(
+    'AOL 4.0 (identified as IE 6, ‘Mac’ not recognised, as expected)'
+  , ' b4s1 b4i b4v4 b4dd b4p_'
+  , "Mozilla/4.0 (compatible; MSIE 4.01; AOL 4.0; Mac_68K)"
+  , ['_99']
+)
+test(
+    'Arora 0.2 (identified as Safari 2)'
+  , ' b4s1 b4s b4v2 b4dd b4pl'
+  , "Mozilla/5.0 (X11; U; Linux; en-US) AppleWebKit/523.15 (KHTML, like Gecko, Safari/419.3) Arora/0.2 (Change: 189 35c14e0)"
+  , ['_99']
+)
+// Avant Browser //@TODO
+// Beonex //@TODO
+// BonEcho //@TODO
+// Browzar //@TODO
+test(
+    'Camino 2 (not ‘like Firefox’)'
+  , ' b4s0 b4_ b4v2 b4dd b4pm'
+  , "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en; rv:1.9.0.8pre) Gecko/2009022800 Camino/2.0b3pre"
+  , ['_99']
+)
+test(
+    'Camino 3 (‘like Firefox’)'
+  , ' b4s1 b4f b4v3 b4dd b4pm'
+  , "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en; rv:1.9.0.18) Gecko/2010021619 Camino/2.0.2 (like Firefox/3.0.18)"
+  , ['_99']
+)
+test(
+    'Charon (uses the Mozilla/4.08 version)'
+  , ' b4s0 b4_ b4v4 b4dd b4p_'
+  , "Mozilla/4.08 (Charon; Inferno)"
+  , ['_99']
+)
+// Cheshire //@TODO
+// Chimera //@TODO
+test(
+    'OS X, Chrome (has no version)'
+  , ' b4s1 b4c b4v0 b4dd b4pm'
+  , "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_6; en-US) AppleWebKit/530.5 (KHTML, like Gecko) Chrome/ Safari/530.5"
+  , ['_99']
+)
+test(
+    'Linux, Chrome 0.2'
+  , ' b4s1 b4c b4v0 b4dd b4pl'
+  , "Mozilla/5.0 (Linux; U; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.2.149.27 Safari/525.13"
+  , ['_99']
+)
+test(
+    'Windows, Chrome 2'
+  , ' b4s1 b4c b4v2 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/528.8 (KHTML, like Gecko) Chrome/2.0.156.0 Version/3.2.1 Safari/528.8"
+  , ['_99']
+)
+test(
+    'ChromePlus 1 (identified as Chrome 5)'
+  , ' b4s1 b4c b4v5 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/533.1 (KHTML, like Gecko) Chrome/5.0.336.0 Safari/533.1 ChromePlus/1.3.8.1"
+  , ['_99']
+)
+test(
+    'Mac OS 9, Classilla 9'
+  , ' b4s0 b4_ b4v9 b4dd b4p_'
+  , "Mozilla/5.0 (Macintosh; U; PPC; en-US; mimic; rv:9.3.0) Clecko/20120101 Classilla/CFM"
+  , ['_99']
+)
+// CometBird //@TODO
+// Comodo_Dragon //@TODO
+test(
+    'Linux, Conkeror 0'
+  , ' b4s0 b4_ b4v0 b4dd b4pl'
+  , "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.14) Gecko/20101020 Conkeror/0.9.2 (Debian-0.9.2+git100804-1)"
+  , ['_99']
+)
+test(
+    'Windows, Conkeror 1'
+  , ' b4s0 b4_ b4v1 b4dd b4pw'
+  , "Mozilla/5.0 (Windows NT 6.1; rv:16.0) Gecko/20121010 conkeror/1.0pre"
+  , ['_99']
+)
+// Crazy Browser //@TODO
+test(
+    'Mac OS 9, Cyberdog'
+  , ' b4s0 b4_ b4v2 b4dd b4p_'
+  , "Cyberdog/2.0 (Macintosh; 68k)"
+  , ['_99']
+)
+// Deepnet Explorer //@TODO
+// DeskBrowse //@TODO
+test(
+    'Dillo 2'
+  , ' b4s0 b4_ b4v2 b4dd b4p_'
+  , "Dillo/2.0"
+  , ['_99']
+)
+// Dooble //@TODO
+test(
+    'Edge 12'
+  , ' b4s1 b4e b4v12 b4dd b4pw'
+  , "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246"
+  , ['_99']
+)
+// Element Browser //@TODO
+test(
+    'FreeBSD, Elinks 0 (a ‘textmode’ browser)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "ELinks/0.11.1 (textmode; FreeBSD 6.1-RELEASE i386; 212x61-2)"
+  , ['_99']
+)
+// Enigma Browser //@TODO
+// EnigmaFox //@TODO
+test(
+    'Linux, Epiphany 2 (identified as Firefox 1)'
+  , ' b4s1 b4f b4v1 b4dd b4pl'
+  , "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.5) Gecko/20060731 Ubuntu/dapper-security Epiphany/2.14 Firefox/1.5.0.5"
+  , ['_99']
+)
+test(
+    'TV Browser, Escape (identified as desktop IE5)'
+  , ' b4s1 b4i b4v5 b4dd b4p_'
+  , "Mozilla/4.0 (compatible; MSIE 5.23; Macintosh; PPC) Escape 5.1.8"
+  , ['_99']
+)
+test(
+    'Firebird 3'
+  , ' b4s0 b4_ b4v3 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 6.1; x64; fr; rv:1.9.2.13) Gecko/20101203 Firebird/3.6.13"
+  , ['_99']
+)
+test(
+    'Firefox pre-release <em class="fail">(incorrectly parsed as v1)</em>'
+  , ' b4s0 b4_ b4v1 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.6) Gecko/2009011913 Firefox"
+  , ['_99']
+)
+test(
+    'Windows 98, Firefox 0.1'
+  , ' b4s1 b4f b4v0 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Win98; rv:1.7.3) Gecko/20040913 Firefox/0.10"
+  , ['_99']
+)
+test(
+    'SunOS, Firefox 1 (SunOS with X11 is parsed as Linux)'
+  , ' b4s1 b4f b4v1 b4dd b4pl'
+  , "Mozilla/5.0 (X11; U; SunOS i86pc; en-US; rv:1.7.5) Gecko/20041109 Firefox/1.0"
+  , ['_99']
+)
+// Fireweb Navigator //@TODO
+// Flock //@TODO
+// Fluid //@TODO
+test(
+    'Galaxy 1'
+  , ' b4s0 b4_ b4v1 b4dd b4pm'
+  , "Galaxy/1.0 [en] (Mac OS X 10.5.6)"
+  , ['_99']
+)
+test(
+    'Galeon 1'
+  , ' b4s0 b4_ b4v1 b4dd b4pl'
+  , "Mozilla/5.0 (X11; U; Linux i686) Gecko/20030430 Galeon/1.3.4 Debian/1.3.4.20030509-1"
+  , ['_99']
+)
+// GranParadiso //@TODO
+// GreenBrowser //@TODO
+// Hana //@TODO
+// HotJava //@TODO
+// IBM WebExplorer //@TODO
+// IBrowse //@TODO
+// iCab //@TODO
+test(
+    'Iceape 1 <em class="fail">(incorrectly parsed as v0 - super corner-case though)</em>'
+  , ' b4s0 b4_ b4v0 b4dd b4pl'
+  , "Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.19) Gecko/20081204 Iceape/1.1.14 (Debian-1.1.14-1) Mnenhy/0.7.6.0"
+  , ['_99']
+)
+// IceCat //@TODO
+// Iceweasel //@TODO
+// iNet Browser //@TODO
+test(
+    'Internet Explorer 2'
+  , ' b4s1 b4i b4v2 b4dd b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 2.0; Windows NT 5.0; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0)"
+  , ['_99']
+)
+test(
+    'Windows 3, Internet Explorer 3'
+  , ' b4s1 b4i b4v3 b4dd b4pw'
+  , "Mozilla/2.0 (compatible; MSIE 3.03; Windows 3.1)"
+  , ['_99']
+)
+test(
+    'Mac OS 9, Internet Explorer 4'
+  , ' b4s1 b4i b4v4 b4dd b4p_'
+  , "Mozilla/4.0 (compatible; MSIE 4.5; Mac_PowerPC)"
+  , ['_99']
+)
+// iRider //@TODO
+test(
+    'Iron 1 (identified as Safari 4)'
+  , ' b4s1 b4s b4v4 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/528.7 (KHTML, like Gecko) Iron/1.0.155.0 Safari/528.7"
+  , ['_99']
+)
+test(
+    'Iron 21 (identified as Chrome)'
+  , ' b4s1 b4c b4v21 b4dd b4pw'
+  , "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1200.0 Iron/21.0.1200.0 Safari/537.1"
+  , ['_99']
+)
+// K-Meleon //@TODO
+// K-Ninja //@TODO
+// Kapiko //@TODO
+test(
+    'Kazehakase 0.4'
+  , ' b4s0 b4_ b4v0 b4dd b4pl'
+  , "Mozilla/5.0 (X11; Linux i686; U;) Gecko/0 Kazehakase/0.4.3 Debian/0.4.3-1ubuntu1"
+  , ['_99']
+)
+// KKman //@TODO
+// KMLite //@TODO
+// Konqueror //@TODO
+// LeechCraft //@TODO
+test(
+    'Unix, Links 0 (a ‘textmode’ browser)'
+  , ' b4s1 b4l b4v0 b4dd b4p_'
+  , "Links (0.98; Unix)"
+  , ['_99']
+)
+test(
+    'FreeBSD, Links 2'
+  , ' b4s3 b4l b4v2 b4dd b4p_'
+  , "Links (2.0; FreeBSD 4.7-STABLE i386; 114x45)"
+  , ['l0','l1','l2']
+)
+// Lobo //@TODO
+// lolifox //@TODO
+// Lorentz //@TODO
+// Lunascape //@TODO
+test(
+    'Lynx 2 (a ‘textmode’ browser)'
+  , ' b4s3 b4l b4v2 b4dd b4p_'
+  , "Lynx/2.8.3rel.1 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/0.9.5a"
+  , ['l0','l1','l2']
+)
+// Madfox //@TODO
+// Maxthon //@TODO
+// Midori //@TODO
+// Minefield //@TODO
+// Mozilla //@TODO
+// myibrow //@TODO
+// MyIE2 //@TODO
+// Namoroka //@TODO
+// Navscape //@TODO
+test(
+    'SunOS, Mosaic 1 (SunOS with X11 is parsed as Linux)'
+  , ' b4s0 b4_ b4v1 b4dd b4pl'
+  , "NCSA Mosaic/1.0 (X11;SunOS 4.1.4 sun4m)"
+  , ['_99']
+)
+test(
+    'Windows 95, Mosaic 3'
+  , ' b4s0 b4_ b4v3 b4dd b4pw'
+  , "NCSA Mosaic/3.0 (Windows 95)"
+  , ['_99']
+)
+// NetNewsWire //@TODO
+// NetPositive //@TODO
+// Netscape //@TODO
+test(
+    'Windows, Netscape 2</em>'
+  , ' b4s0 b4_ b4v2 b4dd b4pw'
+  , "Mozilla/2.02 [fr] (WinNT; I)"
+  , ['_99']
+)
+test(
+    'Windows, Netscape 4.7</em>'
+  , ' b4s0 b4_ b4v4 b4dd b4pw'
+  , "Mozilla/4.7 [en] (WinNT; U)"
+  , ['_99']
+)
+test(
+    'Linux, Netscape 4.8 <em class="fail">(incorrectly parsed as v6)</em>'
+  , ' b4s0 b4_ b4v6 b4dd b4pl'
+  , "Mozilla/4.8C-SGI [en] (X11; U; IRIX64 6.5 IP27)"
+  , ['_99']
+)
+test(
+    'Windows, Netscape 6.1</em>'
+  , ' b4s0 b4_ b4v6 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Win 9x 4.90; de-DE; rv:0.9.2) Gecko/20010726 Netscape6/6.1"
+  , ['_99']
+)
+// NetSurf //@TODO
+test(
+    'Mac OS 9, OmniWeb 4'
+  , ' b4s0 b4_ b4v4 b4dd b4p_'
+  , "Mozilla/4.5 (compatible; OmniWeb/4.2.1-v435.9; Mac_PowerPC)"
+  , ['_99']
+)
+test(
+    'OS X, OmniWeb 496 (identified as Safari 2)'
+  , ' b4s1 b4s b4v1 b4dd b4pm'
+  , "Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en-US) AppleWebKit/85 (KHTML, like Gecko) OmniWeb/v496"
+  , ['_99']
+)
+test(
+    'Windows 98, Opera 4'
+  , ' b4s1 b4o b4v4 b4dd b4pw'
+  , "Opera/4.02 (Windows 98; U) [en]"
+  , ['_99']
+)
+test(
+    'Windows, Opera 5'
+  , ' b4s1 b4o b4v5 b4dd b4pw'
+  , "Opera/5.0 (Ubuntu; U; Windows NT 6.1; es; rv:1.9.2.13) Gecko/20101203 Firefox/3.6.13"
+  , ['_99']
+)
+test(
+    'Windows, Opera 6'
+  , ' b4s1 b4o b4v6 b4dd b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 5.0; Windows XP) Opera 6.0 [en]"
+  , ['_99']
+)
+test(
+    'Linux, Opera 10'
+  , ' b4s1 b4o b4v10 b4dd b4pl'
+  , "Opera/9.80 (X11; Linux x86_64; U; en) Presto/2.2.15 Version/10.00"
+  , ['_99']
+)
+// Orca //@TODO
+// Oregano //@TODO
+// osb-browser //@TODO
+// Palemoon //@TODO
+// Phoenix //@TODO
+// Pogo //@TODO
+// Prism //@TODO
+// QtWeb Internet Browser //@TODO
+// Rekonq //@TODO
+// retawq //@TODO
+test(
+    'RockMelt 0.9 (identified as Chrome 11)'
+  , ' b4s1 b4c b4v11 b4dd b4pw'
+  , "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/534.24 (KHTML, like Gecko) RockMelt/0.9.58.494 Chrome/11.0.696.71 Safari/534.24"
+  , ['_99']
+)
+test(
+    'Windows Safari 3 (identified as Chrome 11)'
+  , ' b4s1 b4s b4v3 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 6.0; da-DK) AppleWebKit/523.12.9 (KHTML, like Gecko) Version/3.0 Safari/523.12.9"
+  , ['_99']
+)
+test(
+    'OS X Safari 2'
+  , ' b4s1 b4s b4v2 b4dd b4pm'
+  , "Mozilla/5.0 (Macintosh; U; PPC Mac OS X; sv-se) AppleWebKit/419 (KHTML, like Gecko) Safari/419.3"
+  , ['_99']
+)
+test(
+    'OS X Safari 1'
+  , ' b4s1 b4s b4v1 b4dd b4pm'
+  , "Mozilla/5.0 (Macintosh; U; PPC Mac OS X; de-de) AppleWebKit/85.7 (KHTML, like Gecko) Safari/85.5"
+  , ['_99']
+)
+// SeaMonkey //@TODO
+// Shiira //@TODO
+// Shiretoko //@TODO
+// Sleipnir //@TODO
+// SlimBrowser //@TODO
+// Stainless //@TODO
+// Sundance //@TODO
+// Sunrise //@TODO
+// surf //@TODO
+test(
+    'Sylera 3 <em class="fail">(incorrectly parsed as v1)</em>'
+  , ' b4s0 b4_ b4v1 b4dd b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.8.1.24) Gecko/20100228 Sylera/3.0.20 SeaMonkey/1.1.19"
+  , ['_99']
+)
+// Tencent Traveler //@TODO
+// TenFourFox //@TODO
+// theWorld Browser //@TODO
+// uzbl //@TODO
+// Vimprobable //@TODO
+// Vonkeror //@TODO
+// w3m //@TODO
+// WeltweitimnetzBrowser //@TODO
+// WorldWideWeb //@TODO
+// Wyzo //@TODO
+
+
+$out.innerHTML += 'www.useragentstring.com/pages/useragentstring.php?typ=Mobile Browser<br>'
+
+test(
+    'Phone, Android Webkit Browser 1'
+  , ' b4s0 b4a b4v1 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 1.6; ar-us; SonyEricssonX10i Build/R2BA026) AppleWebKit/528.5+ (KHTML, like Gecko) Version/3.1.2 Mobile Safari/525.20.1"
+  , []
+)
+test(
+    'Phone, Android Webkit Browser 2'
+  , ' b4s0 b4a b4v2 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 2.2; en-sa; HTC_DesireHD_A9191 Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"
+  , []
+)
+test(
+    'Phone, Android Webkit Browser 2'
+  , ' b4s0 b4a b4v2 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 2.3.3; zh-tw; HTC_Pyramid Build/GRI40) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari"
+  , []
+)
+test(
+    'Phone, Android Webkit Browser 4'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 4.0.3; de-ch; HTC Sensation Build/IML74K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30"
+  , []
+)
+test(
+    'BlackBerry, BlackBerry Browser 6'
+  , ' b4s0 b4s b4v6 b4dt b4p_'
+  , "Mozilla/5.0 (BlackBerry; U; BlackBerry 9700; pt) AppleWebKit/534.8+ (KHTML, like Gecko) Version/6.0.0.546 Mobile Safari/534.8+"
+  , []
+)
+test(
+    'BlackBerry, BlackBerry Browser 7'
+  , ' b4s0 b4s b4v7 b4dt b4p_'
+  , "Mozilla/5.0 (BlackBerry; U; BlackBerry 9860; en-US) AppleWebKit/534.11+ (KHTML, like Gecko) Version/7.0.0.254 Mobile Safari/534.11+"
+  , []
+)
+// Blazer //@TODO
+// Bolt //@TODO
+test(
+    'Nokia, Browser for S60 (identified as Safari 3)'
+  , ' b4s0 b4s b4v3 b4dt b4p_'
+  , "Nokia5250/10.0.011 (SymbianOS/9.4; U; Series60/5.0 Mozilla/5.0; Profile/MIDP-2.1 Configuration/CLDC-1.1 ) AppleWebKit/525 (KHTML, like Gecko) Safari/525 3gpp-gba"
+  , []
+)
+test(
+    'Nokia, Browser for S60 7'
+  , ' b4s0 b4_ b4v7 b4dt b4p_'
+  , "NokiaN97/21.1.107 (SymbianOS/9.4; Series60/5.0 Mozilla/5.0; Profile/MIDP-2.1 Configuration/CLDC-1.1) AppleWebkit/525 (KHTML, like Gecko) BrowserNG/7.1.4"
+  , []
+)
+test(
+    'Nokia, Browser for S60, OSS 3.0'
+  , ' b4s0 b4_ b4v3 b4dt b4p_'
+  , "NokiaC7-00/SymbianOS/9.1 Series60/3.0 3gpp-gba"
+  , []
+)
+test(
+    'Nokia, Doris 1'
+  , ' b4s0 b4_ b4v1 b4dt b4p_'
+  , "Doris/1.15 [en] (Symbian)"
+  , []
+)
+// Dorothy //@TODO
+test(
+    'Android, Fennec 5 (an Android build of Firefox)'
+  , ' b4s0 b4f b4v5 b4dt b4pa'
+  , "Mozilla/5.0 (Android; Linux armv7l; rv:5.0) Gecko/20110517 Firefox/5.0 Fennec/5.0"
+  , []
+)
+test(
+    'Nokia, Go Browser 1.6'
+  , ' b4s0 b4_ b4v1 b4dt b4p_'
+  , "Nokia5800XpressMusic/GoBrowser/1.6.0.46"
+  , []
+)
+test(
+    'Windows Phone, IE Mobile 7'
+  , ' b4s0 b4i b4v7 b4dt b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 7.0; Windows Phone OS 7.0; Trident/3.1; IEMobile/7.0; Nokia;N70)"
+  , []
+)
+test(
+    'Windows Phone, IE Mobile 9'
+  , ' b4s0 b4i b4v9 b4dt b4pw'
+  , "Mozilla/5.0 (compatible; MSIE 9.0; Windows Phone OS 7.5; Trident/5.0; IEMobile/9.0)"
+  , []
+)
+// Iris //@TODO
+// Maemo Browser //@TODO
+test(
+    'Motorola Internet Browser (‘b4dt’ would bloat code)'
+  , ' b4s0 b4_ b4v2 b4dd b4p_'
+  , "MOT-L6/0A.60.1BR MIB/2.2.1 Profile/MIDP-2.0 Configuration/CLDC-1.1"
+  , []
+)
+// Minimo //@TODO
+test(
+    'Kindle, NetFront 3 <em class="fail">(incorrectly parsed as v1 - corner case)</em>'
+  , ' b4s0 b4_ b4v1 b4dt b4pl'
+  , "Mozilla/4.0 (compatible; Linux 2.6.10) NetFront/3.3 Kindle/1.0 (screen 600x800)"
+  , []
+)
+test(
+    'Sony Ericsson, NetFront 3'
+  , ' b4s0 b4_ b4v3 b4dt b4p_'
+  , "SonyEricssonK530c/R8BA Browser/NetFront/3.3 Profile/MIDP-2.0 Configuration/CLDC-1.1"
+  , []
+)
+test(
+    'Symbian, Opera Mini 1'
+  , ' b4s0 b4m b4v1 b4dt b4p_'
+  , "Opera/9.80 (J2ME/MIDP; Opera Mini/1.0/886; U; en) Presto/2.4.15"
+  , []
+)
+test(
+    'iOS, Opera Mini 5'
+  , ' b4s0 b4m b4v5 b4dt b4pi'
+  , "Opera/9.80 (iPhone; Opera Mini/5.0.019802/886; U; en) Presto/2.4.15"
+  , []
+)
+test(
+    'Symbian, Opera Mini 9'
+  , ' b4s0 b4m b4v9 b4dt b4p_'
+  , "Opera/9.80 (J2ME/MIDP; Opera Mini/9.80 (S60; SymbOS; Opera Mobi/23.348; U; en) Presto/2.5.25 Version/10.54"
+  , []
+)
+test(
+    'Windows Mobile, Opera Mobile 10'
+  , ' b4s0 b4o b4v10 b4dt b4pw'
+  , "Mozilla/4.0 (compatible; Windows Mobile; WCE; Opera Mobi/WMD-50433; U; de) Presto/2.4.13 Version/10.00"
+  , []
+)
+test(
+    'Windows Mobile, Opera Mobile 10'
+  , ' b4s0 b4o b4v10 b4dt b4pw'
+  , "Mozilla/4.0 (compatible; Windows Mobile; WCE; Opera Mobi/WMD-50433; U; de) Presto/2.4.13 Version/10.00"
+  , []
+)
+test(
+    'Symbian, Opera Mobile 10'
+  , ' b4s0 b4o b4v10 b4dt b4p_'
+  , "Opera/9.80 (S60; SymbOS; Opera Mobi/1209; U; fr) Presto/2.5.28 Version/10.1"
+  , []
+)
+test(
+    'Android, Opera Mobile 10'
+  , ' b4s0 b4o b4v10 b4dt b4pa'
+  , "Opera/9.80 (Android 2.2;;; Linux; Opera Mobi/ADR-1012291359; U; en) Presto/2.7.60 Version/10.5"
+  , []
+)
+test(
+    'Sony Ericsson, SEMC Browser 4'
+  , ' b4s0 b4_ b4v4 b4dt b4p_'
+  , "SonyEricssonS700c/R3B SEMC-Browser/4.0.1 Profile/MIDP-2.0 Configuration/CLDC-1.1"
+  , []
+)
+test(
+    'Sony Ericsson, SEMC Browser 4'
+  , ' b4s0 b4_ b4v4 b4dt b4p_'
+  , "SonyEricssonS700c/R3B SEMC-Browser/4.0.1 Profile/MIDP-2.0 Configuration/CLDC-1.1"
+  , []
+)
+// SEMC-Browser //@TODO
+// Skyfire //@TODO
+// TeaShark //@TODO
+// Teleca-Obigo //@TODO
+// uZard Web //@TODO
+
+
+$out.innerHTML += 'www.useragentstring.com/pages/useragentstring.php?typ=Console<br>'
+
+test(
+    'Nintendo DS, Bunjalloo 0.7'
+  , ' b4s0 b4_ b4v0 b4dg b4p_'
+  , "Bunjalloo/0.7.6(Nintendo DS;U;en)"
+  , []
+)
+test(
+    'Playstation 3, Browser 1'
+  , ' b4s0 b4_ b4v1 b4dg b4p_'
+  , "Mozilla/5.0 (PLAYSTATION 3; 1.0)"
+  , []
+)
+test(
+    'Playstation 3, Browser 3'
+  , ' b4s0 b4_ b4v3 b4dg b4p_'
+  , "Mozilla/5.0 (PLAYSTATION 3; 3.55)"
+  , []
+)
+test(
+    'PSP, Browser 2'
+  , ' b4s0 b4_ b4v2 b4dg b4p_'
+  , "Mozilla/4.0 (PSP (PlayStation Portable); 2.00)"
+  , []
+)
+test(
+    'PSP, Browser 2'
+  , ' b4s0 b4_ b4v2 b4dg b4p_'
+  , "Mozilla/4.0 (PSP (PlayStation Portable); 2.00)"
+  , []
+)
+
+
+$out.innerHTML += 'www.useragentstring.com/pages/useragentstring.php?typ=Crawler<br>'
+
+test(
+    '008'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Mozilla/5.0 (compatible; 008/0.83; http://www.80legs.com/webcrawler.html) Gecko/2008032620"
+  , []
+)
+test(
+    'ABACHOBot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "ABACHOBot"
+  , []
+)
+test(
+    'Accoona-AI-Agent'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Accoona-AI-Agent/1.1.2 (aicrawler at accoonabot dot com)"
+  , []
+)
+test(
+    'AddSugarSpiderBot (identified as an IE7 bot)'
+  , ' b4s0 b4i b4v7 b4db b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0) AddSugarSpiderBot www.idealobserver.com"
+  , []
+)
+test(
+    'AnyApexBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; AnyApexBot/1.0; +http://www.anyapex.com/bot.html)"
+  , []
+)
+test(
+    'Arachmo (identified as desktop)'
+  , ' b4s0 b4_ b4v4 b4dd b4p_'
+  , "Mozilla/4.0 (compatible; Arachmo)"
+  , []
+)
+test(
+    'B-l-i-t-z-B-O-T (identified as desktop)'
+  , ' b4s0 b4_ b4v4 b4dd b4p_'
+  , "Mozilla/4.0 (compatible; B-l-i-t-z-B-O-T)"
+  , []
+)
+test(
+    'Baiduspider'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
+  , []
+)
+test(
+    'BecomeBot (identified as an IE6 bot)'
+  , ' b4s0 b4i b4v6 b4db b4p_'
+  , "Mozilla/5.0 (compatible; BecomeBot/3.0; MSIE 6.0 compatible; +http://www.become.com/site_owners.html)"
+  , []
+)
+test(
+    'BeslistBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; BeslistBot; nl; BeslistBot 1.0; http://www.beslist.nl/"
+  , []
+)
+test(
+    'BillyBobBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "BillyBobBot/1.0 (+http://www.billybobbot.com/crawler/)"
+  , []
+)
+test(
+    'Bimbot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Bimbot/1.0"
+  , []
+)
+test(
+    'Bingbot (lowercase)'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"
+  , []
+)
+test(
+    'Bingbot (uppercase)'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)"
+  , []
+)
+test(
+    'BlitzBOT'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "BlitzBOT@tricus.com (Mozilla compatible)"
+  , []
+)
+test(
+    'boitho.com-dc'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "boitho.com-dc/0.85 ( http://www.boitho.com/dcbot.html )"
+  , []
+)
+test(
+    'boitho.com-robot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "boitho.com-robot/1.1"
+  , []
+)
+test(
+    'btbot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "btbot/0.4 (+http://www.btbot.com/btbot.html)"
+  , []
+)
+test(
+    'CatchBot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "CatchBot/2.0; +http://www.catchbot.com"
+  , []
+)
+test(
+    'Cerberian Drtrs (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v3 b4dd b4p_'
+  , "Mozilla/4.0 (compatible; Cerberian Drtrs Version-3.2-Build-1)"
+  , []
+)
+test(
+    'Charlotte'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; Charlotte/1.0b; http://www.searchme.com/support/)"
+  , []
+)
+test(
+    'ConveraCrawler'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "ConveraCrawler/0.9d (+http://www.authoritativeweb.com/crawl)"
+  , []
+)
+test(
+    'cosmos'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "cosmos/0.9_(robot@xyleme.com)"
+  , []
+)
+test(
+    'Covario IDS (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4p_'
+  , "Covario-IDS/1.0 (Covario; http://www.covario.com/ids; support at covario dot com)"
+  , []
+)
+test(
+    'DataparkSearch'
+  , ' b4s0 b4_ b4v4 b4db b4p_'
+  , "DataparkSearch/4.37-23012006 ( http://www.dataparksearch.org/)"
+  , []
+)
+test(
+    'DiamondBot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "DiamondBot"
+  , []
+)
+test(
+    'Discobot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; discobot/1.0; +http://discoveryengine.com/discobot.html)"
+  , []
+)
+test(
+    'Dotbot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; DotBot/1.1; http://www.dotnetdotcom.org/, crawler@dotnetdotcom.org)"
+  , []
+)
+test(
+    'EmeraldShield.com WebBot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "EmeraldShield.com WebBot (http://www.emeraldshield.com/webbot.aspx)"
+  , []
+)
+test(
+    'envolk[ITS]spider'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "envolk[ITS]spider/1.6 ( http://www.envolk.com/envolkspider.html)"
+  , []
+)
+test(
+    'EsperanzaBot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "EsperanzaBot(+http://www.esperanza.to/bot/)"
+  , []
+)
+test(
+    'Exabot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Exabot/2.0"
+  , []
+)
+test(
+    'FAST Enterprise Crawler (‘b4v6’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "FAST Enterprise Crawler 6 / Scirus scirus-crawler@fast.no; http://www.scirus.com/srsapp/contactus/"
+  , []
+)
+test(
+    'FAST-WebCrawler'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "FAST-WebCrawler/3.8 (atw-crawler at fast dot no; http://fast.no/support/crawler.asp)"
+  , []
+)
+test(
+    'FDSE robot'
+  , ' b4s0 b4_ b4v4 b4db b4p_'
+  , "Mozilla/4.0 (compatible: FDSE robot)"
+  , []
+)
+test(
+    'FindLinks (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v2 b4dd b4p_'
+  , "findlinks/2.0.1 (+http://wortschatz.uni-leipzig.de/findlinks/)"
+  , []
+)
+test(
+    'FurlBot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Mozilla/4.0 compatible FurlBot/Furl Search 2.0 (FurlBot; http://www.furl.net; wn.furlbot@looksmart.net)"
+  , []
+)
+test(
+    'FyberSpider'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "FyberSpider (+http://www.fybersearch.com/fyberspider.php)"
+  , []
+)
+test(
+    'g2crawler'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "g2Crawler nobody@airmail.net"
+  , []
+)
+test(
+    'Gaisbot'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "Gaisbot/3.0+(robot06@gais.cs.ccu.edu.tw;+http://gais.cs.ccu.edu.tw/robot.php)"
+  , []
+)
+test(
+    'GalaxyBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "GalaxyBot/1.0 (http://www.galaxy.com/galaxybot.html)"
+  , []
+)
+test(
+    'genieBot (avoiding ‘b4v64’ would bloat code)'
+  , ' b4s0 b4_ b4v64 b4db b4p_'
+  , "genieBot ((http://64.5.245.11/faq/faq.html))"
+  , []
+)
+test(
+    'Gigabot'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "Gigabot/3.0 (http://www.gigablast.com/spider.html)"
+  , []
+)
+test(
+    'Girafabot'
+  , ' b4s0 b4i b4v6 b4db b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322; Girafabot [girafa.com])"
+  , []
+)
+test(
+    'Googlebot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+  , []
+)
+test(
+    'Googlebot-Image'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Googlebot-Image/1.0"
+  , []
+)
+test(
+    'GurujiBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 GurujiBot/1.0 (+http://www.guruji.com/en/WebmasterFAQ.html)"
+  , []
+)
+test(
+    'HappyFunBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "HappyFunBot/1.1 ( http://www.happyfunsearch.com/bot.html)"
+  , []
+)
+test(
+    'hl_ftien_spider'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "hl_ftien_spider_v1.1"
+  , []
+)
+test(
+    'Holmes'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "holmes/3.12.4 (http://morfeo.centrum.cz/bot)"
+  , []
+)
+test(
+    'htdig'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "htdig/3.1.6 (unconfigured@htdig.searchengine.maintainer)"
+  , []
+)
+test(
+    'iaskspider'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "iaskspider/2.0(+http://iask.com/help/help_index.html)"
+  , []
+)
+test(
+    'ia_archiver (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v8 b4dd b4pw'
+  , "ia_archiver/8.9 (Windows NT 3.1; en-US;)"
+  , []
+)
+test(
+    'iCCrawler'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "iCCrawler (http://www.iccenter.net/bot.htm)"
+  , []
+)
+test(
+    'ichiro'
+  , ' b4s0 b4_ b4v4 b4db b4p_'
+  , "ichiro/4.0 (http://help.goo.ne.jp/door/crawler.html)"
+  , []
+)
+test(
+    'igdeSpyder (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "igdeSpyder (compatible; igde.ru; +http://igde.ru/doc/tech.html)"
+  , []
+)
+test(
+    'IRLbot'
+  , ' b4s0 b4i b4v6 b4db b4p_'
+  , "IRLbot/3.0 (compatible; MSIE 6.0; http://irl.cs.tamu.edu/crawler/)"
+  , []
+)
+test(
+    'IssueCrawler'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "IssueCrawler"
+  , []
+)
+test(
+    'Jaxified Bot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Jaxified Bot (+http://www.jaxified.com/crawler/)"
+  , []
+)
+test(
+    'Jyxobot (‘b4v1’ would bloat code - b4 expects ‘/1.0’)'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Jyxobot/1"
+  , []
+)
+test(
+    'KoepaBot'
+  , ' b4s0 b4_ b4v5 b4db b4p_'
+  , "Mozilla/5.0 (compatible; KoepaBot BETA; http://www.koepa.nl/bot.html)"
+  , []
+)
+test(
+    'L.webis (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "L.webis/0.87 (http://webalgo.iit.cnr.it/index.php?pg=lwebis)"
+  , []
+)
+test(
+    'LapozzBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "LapozzBot/1.4 (+http://robot.lapozz.com)"
+  , []
+)
+test(
+    'Larbin (‘b4db’ and ‘b4v2’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "larbin_2.6.3 tangyi858@163.com"
+  , []
+)
+test(
+    'LDSpider'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "ldspider (http://code.google.com/p/ldspider/wiki/Robots)"
+  , []
+)
+test(
+    'LexxeBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "LexxeBot/1.0 (lexxebot@lexxe.com)"
+  , []
+)
+test(
+    'Linguee Bot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Linguee Bot (http://www.linguee.com/bot; bot@linguee.com)"
+  , []
+)
+test(
+    'LinkWalker (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v2 b4dd b4p_'
+  , "LinkWalker/2.0"
+  , []
+)
+test(
+    'lmspider'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "lmspider (lmspider@scansoft.com)"
+  , []
+)
+test(
+    'lwp-trivial (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4p_'
+  , "lwp-trivial/1.41"
+  , []
+)
+test(
+    'mabontland (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "http://www.mabontland.com"
+  , []
+)
+test(
+    'magpie-crawler'
+  , ' b4s0 b4_ b4v1 b4db b4pl'
+  , "magpie-crawler/1.1 (U; Linux amd64; en-GB; +http://www.brandwatch.net)"
+  , []
+)
+test(
+    'Mediapartners-Google (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v2 b4dd b4p_'
+  , "Mediapartners-Google/2.1"
+  , []
+)
+test(
+    'MJ12bot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; MJ12bot/v1.2.4; http://www.majestic12.co.uk/bot.php?+)"
+  , []
+)
+test(
+    'Mnogosearch'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "Mnogosearch-3.1.21"
+  , []
+)
+test(
+    'mogimogi (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4p_'
+  , "mogimogi/1.0"
+  , []
+)
+test(
+    'MojeekBot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Mozilla/5.0 (compatible; MojeekBot/2.0; http://www.mojeek.com/bot.html)"
+  , []
+)
+test(
+    'Moreoverbot'
+  , ' b4s0 b4_ b4v5 b4db b4p_'
+  , "Moreoverbot/5.1 ( http://w.moreover.com; webmaster@moreover.com) Mozilla/5.0"
+  , []
+)
+test(
+    'Morning Paper'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Morning Paper 1.0 (robots.txt compliant!)"
+  , []
+)
+test(
+    'msnbot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "msnbot/2.1"
+  , []
+)
+test(
+    'MSRBot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "MSRBOT (http://research.microsoft.com/research/sv/msrbot/)"
+  , []
+)
+test(
+    'MVAClient (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "MVAClient"
+  , []
+)
+test(
+    'mxbot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; mxbot/1.0; +http://www.chainn.com/mxbot.html)"
+  , []
+)
+test(
+    'NetResearchServer'
+  , ' b4s0 b4_ b4v4 b4db b4p_'
+  , "NetResearchServer/4.0(loopimprovements.com/robot.html)"
+  , []
+)
+test(
+    'NetSeer Crawler'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Mozilla/5.0 (compatible; NetSeer crawler/2.0; +http://www.netseer.com/crawler.html; crawler@netseer.com)"
+  , []
+)
+test(
+    'NewsGator (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v2 b4dd b4pw'
+  , "NewsGator/2.5 (http://www.newsgator.com; Microsoft Windows NT 5.1.2600.0; .NET CLR 1.1.4322.2032)"
+  , []
+)
+test(
+    'NG-Search'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "NG-Search/0.9.8 (http://www.ng-search.com)"
+  , []
+)
+test(
+    'nicebot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "nicebot"
+  , []
+)
+test(
+    'noxtrumbot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "noxtrumbot/1.0 (crawler@noxtrum.com)"
+  , []
+)
+test(
+    'Nusearch Spider'
+  , ' b4s0 b4i b4v4 b4db b4pw'
+  , "nuSearch Spider (compatible; MSIE 4.01; Windows NT)"
+  , []
+)
+test(
+    'NutchCVS'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "NutchCVS/0.8-dev (Nutch; http://lucene.apache.org/nutch/bot.html; nutch-agent@lucene.apache.org)"
+  , []
+)
+test(
+    'Nymesis (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4p_'
+  , "Nymesis/1.0 (http://nymesis.com)"
+  , []
+)
+test(
+    'obot'
+  , ' b4s0 b4i b4v5 b4db b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT 4.0; obot)"
+  , []
+)
+test(
+    'oegp (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4p_'
+  , "oegp v. 1.3.0"
+  , []
+)
+test(
+    'omgilibot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "omgilibot/0.4 +http://omgili.com"
+  , []
+)
+test(
+    'OmniExplorer_Bot'
+  , ' b4s0 b4_ b4v6 b4db b4p_'
+  , "OmniExplorer_Bot/6.70 (+http://www.omni-explorer.com) WorldIndexer"
+  , []
+)
+test(
+    'OOZBOT'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "OOZBOT/0.20 ( -- ; http://www.setooz.com/oozbot.html ; agentname at setooz dot_com )"
+  , []
+)
+test(
+    'Orbiter'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Orbiter (+http://www.dailyorbit.com/bot.htm)"
+  , []
+)
+test(
+    'PageBitesHyperBot (‘b4v600’ would bloat code - b4 expects ‘/1.0’)'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "PageBitesHyperBot/600 (http://www.pagebites.com/)"
+  , []
+)
+test(
+    'Peew'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; Peew/1.0; http://www.peew.de/crawler/)"
+  , []
+)
+test(
+    'polybot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "polybot 1.0 (http://cis.poly.edu/polybot/)"
+  , []
+)
+test(
+    'Pompos (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4p_'
+  , "Pompos/1.3 http://dir.com/pompos.html"
+  , []
+)
+test(
+    'PostPost'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "PostPost/1.0 (+http://postpo.st/crawlers)"
+  , []
+)
+test(
+    'Psbot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "psbot/0.1 (+http://www.picsearch.com/bot.html)"
+  , []
+)
+test(
+    'Qseero (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4p_'
+  , "Qseero v1.0.0"
+  , []
+)
+test(
+    'Radian6'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "radian6_default_(www.radian6.com/crawler)"
+  , []
+)
+test(
+    'RAMPyBot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "RAMPyBot - www.giveRAMP.com/0.1 (RAMPyBot - www.giveRAMP.com; http://www.giveramp.com/bot.html; support@giveRAMP.com)"
+  , []
+)
+test(
+    'RufusBot (avoiding ‘b4v64’ would bloat code)'
+  , ' b4s0 b4_ b4v64 b4db b4p_'
+  , "RufusBot (Rufus Web Miner; http://64.124.122.252/feedback.html)"
+  , []
+)
+test(
+    'SandCrawler'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "SandCrawler - Compatibility Testing"
+  , []
+)
+test(
+    'SBIder (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "SBIder/0.8-dev (SBIder; http://www.sitesell.com/sbider.html; http://support.sitesell.com/contact-support.html)"
+  , []
+)
+test(
+    'ScoutJet (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v5 b4dd b4p_'
+  , "Mozilla/5.0 (compatible; ScoutJet; http://www.scoutjet.com/)"
+  , []
+)
+test(
+    'Scrubby (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v2 b4dd b4p_'
+  , "Mozilla/5.0 (compatible; Scrubby/2.2; +http://www.scrubtheweb.com/)"
+  , []
+)
+test(
+    'SearchSight'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "SearchSight/2.0 (http://SearchSight.com/)"
+  , []
+)
+test(
+    'Seekbot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Seekbot/1.0 (http://www.seekbot.net/bot.html) RobotsTxtFetcher/1.2"
+  , []
+)
+test(
+    'semanticdiscovery (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "semanticdiscovery/0.1"
+  , []
+)
+test(
+    'Sensis Web Crawler'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Sensis Web Crawler (search_comments\\at\\sensis\\dot\\com\\dot\\au)"
+  , []
+)
+test(
+    'SEOChat::Bot'
+  , ' b4s0 b4i b4v6 b4db b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0) SEOChat::Bot v1.1"
+  , []
+)
+test(
+    'SeznamBot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "SeznamBot/2.0 (+http://fulltext.sblog.cz/robot/)"
+  , []
+)
+test(
+    'Shim-Crawler'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Shim-Crawler(Mozilla-compatible; http://www.logos.ic.i.u-tokyo.ac.jp/crawler/; crawl@logos.ic.i.u-tokyo.ac.jp)"
+  , []
+)
+test(
+    'ShopWiki'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "ShopWiki/1.0 ( +http://www.shopwiki.com/wiki/Help:Bot)"
+  , []
+)
+test(
+    'Shoula robot'
+  , ' b4s0 b4_ b4v4 b4db b4p_'
+  , "Mozilla/4.0 (compatible: Shoula robot)"
+  , []
+)
+test(
+    'silk (‘b4db’ and ‘b4v1’ would bloat code)'
+  , ' b4s0 b4_ b4v3 b4dd b4p_'
+  , "silk/1.0 (+http://www.slider.com/silk.htm)/3.7"
+  , []
+)
+test(
+    'Sitebot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Mozilla/5.0 (compatible; SiteBot/0.1; http://www.sitebot.org/robot/)"
+  , []
+)
+test(
+    'Snappy (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4p_'
+  , "Snappy/1.1 ( http://www.urltrends.com/ )"
+  , []
+)
+test(
+    'sogou spider'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "sogou spider"
+  , []
+)
+test(
+    'Sosospider'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Sosospider+(+http://help.soso.com/webspider.htm)"
+  , []
+)
+test(
+    'Speedy Spider'
+  , ' b4s0 b4_ b4v5 b4db b4pw'
+  , "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) Speedy Spider (http://www.entireweb.com/about/search_tech/speedy_spider/)"
+  , []
+)
+test(
+    'Sqworm (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v2 b4dd b4p_'
+  , "Sqworm/2.9.85-BETA (beta_release; 20011115-775; i686-pc-linux-gnu)"
+  , []
+)
+test(
+    'StackRambler (‘b4db’ would bloat code)'
+  , ' b4s0 b4i b4v2 b4dd b4p_'
+  , "StackRambler/2.0 (MSIE incompatible)"
+  , []
+)
+test(
+    'suggybot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Mozilla/5.0 (compatible; suggybot v0.01a, http://blog.suggy.com/was-ist-suggy/suggy-webcrawler/)"
+  , []
+)
+test(
+    'SurveyBot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "SurveyBot/2.3+(Whois+Source)"
+  , []
+)
+test(
+    'SynooBot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "SynooBot/0.7.1 (SynooBot; http://www.synoo.de/bot.html; webmaster@synoo.com)"
+  , []
+)
+test(
+    'Teoma'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Mozilla/2.0 (compatible; Ask Jeeves/Teoma; +http://sp.ask.com/docs/about/tech_crawling.html)"
+  , []
+)
+test(
+    'TerrawizBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "TerrawizBot/1.0 (+http://www.terrawiz.com/bot.html)"
+  , []
+)
+test(
+    'TheSuBot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "TheSuBot/0.2 (www.thesubot.de)"
+  , []
+)
+test(
+    'Thumbnail.CZ robot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Thumbnail.CZ robot 1.1 (http://thumbnail.cz/why-no-robots-txt.html)"
+  , []
+)
+test(
+    'TinEye'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "TinEye/1.1 (http://tineye.com/crawler.html)"
+  , []
+)
+test(
+    'truwoGPS (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4pl'
+  , "truwoGPS/1.0 (GNU/Linux; U; i686; en-US; +http://www.lan4lano.net/browser.html )"
+  , []
+)
+test(
+    'TurnitinBot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "TurnitinBot/2.1 (http://www.turnitin.com/robot/crawlerinfo.html)"
+  , []
+)
+test(
+    'TweetedTimes Bot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; TweetedTimes Bot/1.0; http://tweetedtimes.com)"
+  , []
+)
+test(
+    'TwengaBot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "TwengaBot"
+  , []
+)
+test(
+    'updated (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "updated/0.1-beta (updated; http://www.updated.com; updated@updated.com)"
+  , []
+)
+test(
+    'Urlfilebot'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Mozilla/5.0 (compatible; Urlfilebot/2.2; +http://urlfile.com/bot.html)"
+  , []
+)
+test(
+    'Vagabondo'
+  , ' b4s0 b4_ b4v4 b4db b4p_'
+  , "Mozilla/4.0 (compatible; Vagabondo/4.0Beta; webcrawler at wise-guys dot nl; http://webagent.wise-guys.nl/; http://www.wise-guys.nl/)"
+  , []
+)
+test(
+    'VoilaBot'
+  , ' b4s0 b4i b4v5 b4db b4pw'
+  , "Mozilla/4.0 (compatible; MSIE 5.0; Windows 95) VoilaBot BETA 1.2 (http://www.voila.com/)"
+  , []
+)
+test(
+    'Vortex'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Vortex/2.2 (+http://marty.anstey.ca/robots/vortex/)"
+  , []
+)
+test(
+    'voyager'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "voyager/2.0 (http://www.kosmix.com/crawler.html)"
+  , []
+)
+test(
+    'VYU2 (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "VYU2 (GNU; OpenRISC)"
+  , []
+)
+test(
+    'webcollage (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v1 b4dd b4p_'
+  , "webcollage/1.93"
+  , []
+)
+test(
+    'Websquash.com'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "Websquash.com (Add url robot)"
+  , []
+)
+test(
+    'wf84'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "http://www.almaden.ibm.com/cs/crawler [wf84]"
+  , []
+)
+test(
+    'WoFindeIch Robot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "WoFindeIch Robot 1.0(+http://www.search.wofindeich.com/robot.php)"
+  , []
+)
+test(
+    'WomlpeFactory'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "WomlpeFactory/0.1 (+http://www.Womple.com/bot.html)"
+  , []
+)
+test(
+    'Xaldon_WebSpider'
+  , ' b4s0 b4_ b4v2 b4db b4p_'
+  , "Xaldon_WebSpider/2.0.b1"
+  , []
+)
+test(
+    'yacy'
+  , ' b4s0 b4_ b4v1 b4db b4pw'
+  , "yacybot (x86 Windows XP 5.1; java 1.6.0_12; Europe/de) http://yacy.net/bot.html"
+  , []
+)
+test(
+    'Yahoo! Slurp'
+  , ' b4s0 b4_ b4v5 b4db b4p_'
+  , "Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)"
+  , []
+)
+test(
+    'Yahoo! Slurp China (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v5 b4dd b4p_'
+  , "Mozilla/5.0 (compatible; Yahoo! Slurp China; http://misc.yahoo.com.cn/help.html)"
+  , []
+)
+test(
+    'YahooSeeker (‘b4db’ would bloat code)'
+  , ' b4s0 b4i b4v5 b4dd b4p_'
+  , "YahooSeeker/1.2 (compatible; Mozilla 4.0; MSIE 5.5; yahooseeker at yahoo-inc dot com ; http://help.yahoo.com/help/us/shop/merchant/)"
+  , []
+)
+test(
+    'YahooSeeker-Testing'
+  , ' b4s0 b4i b4v5 b4db b4p_'
+  , "YahooSeeker-Testing/v3.9 (compatible; Mozilla 4.0; MSIE 5.5; http://search.yahoo.com/)"
+  , []
+)
+test(
+    'YandexBot'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)"
+  , []
+)
+test(
+    'YandexImages'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "Mozilla/5.0 (compatible; YandexImages/3.0; +http://yandex.com/bots)"
+  , []
+)
+test(
+    'Yasaklibot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Yasaklibot/v1.2 (http://www.Yasakli.com/bot.php)"
+  , []
+)
+test(
+    'Yeti'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Yeti/1.0 (NHN Corp.; http://help.naver.com/robots/)"
+  , []
+)
+test(
+    'YodaoBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; YodaoBot/1.0; http://www.yodao.com/help/webmaster/spider/; )"
+  , []
+)
+test(
+    'yoogliFetchAgent (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "yoogliFetchAgent/0.1"
+  , []
+)
+test(
+    'YoudaoBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/5.0 (compatible; YoudaoBot/1.0; http://www.youdao.com/help/webmaster/spider/; )"
+  , []
+)
+test(
+    'Zao (‘b4db’ would bloat code)'
+  , ' b4s0 b4_ b4v0 b4dd b4p_'
+  , "Zao/0.1 (http://www.kototoi.org/zao/)"
+  , []
+)
+test(
+    'Zealbot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/4.0 (compatible; Zealbot 1.0)"
+  , []
+)
+test(
+    'zspider'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "zspider/0.9-dev http://feedback.redkolibri.com/"
+  , []
+)
+test(
+    'ZyBorg'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "Mozilla/4.0 compatible ZyBorg/1.0 DLC (wn.zyborg@looksmart.net; http://www.WISEnutbot.com)"
+  , []
+)
+
+$out.innerHTML += 'www.keycdn.com/blog/web-crawlers/ not mentioned above<br>'
+
+test(
+    'DuckDuckBot'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "DuckDuckBot/1.0; (+http://duckduckgo.com/duckduckbot.html)"
+  , []
+)
+test(
+    'Sogou Spider 3'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "Sogou Pic Spider/3.0( http://www.sogou.com/docs/help/webmasters.htm#07)"
+  , []
+)
+test(
+    'Sogou Spider 4'
+  , ' b4s0 b4_ b4v4 b4db b4p_'
+  , "Sogou web spider/4.0(+http://www.sogou.com/docs/help/webmasters.htm#07)"
+  , []
+)
+test(
+    'Sogou Test Spider'
+  , ' b4s0 b4i b4v5 b4db b4pw'
+  , "Sogou-Test-Spider/4.0 (compatible; MSIE 5.5; Windows 98)"
+  , []
+)
+test(
+    'Exabot'
+  , ' b4s0 b4_ b4v3 b4db b4p_'
+  , "Mozilla/5.0 (compatible; Exabot/3.0; +http://www.exabot.com/go/robot)"
+  , []
+)
+test(
+    'Exabot (‘b4v3’ is from Konqueror ... ok tho)'
+  , ' b4s0 b4_ b4v3 b4db b4pl'
+  , "Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.5 (like Gecko) (Exabot-Thumbnails)"
+  , []
+)
+test(
+    'Facebot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "facebot"
+  , []
+)
+test(
+    'Facebot'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "facebot"
+  , []
+)
+test(
+    'Facebook External Hit'
+  , ' b4s0 b4_ b4v1 b4db b4p_'
+  , "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+  , []
+)
+test(
+    'ia_archiver'
+  , ' b4s0 b4_ b4v0 b4db b4p_'
+  , "ia_archiver (+http://www.alexa.com/site/help/webmasters; crawler@alexa.com)"
+  , []
+)
+
+$out.innerHTML += 'Tablets - developers.whatismybrowser.com/useragents/explore/hardware_type_specific/tablet/?order_by=-times_seen<br>'
+
+test(
+    'iPad iOS, Safari 9'
+  , ' b4s0 b4s b4v9 b4dt b4pi'
+  , "Mozilla/5.0 (iPad; CPU OS 9_3_5 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13G36 Safari/601.1"
+  , []
+)
+test(
+    'AOPEN eTile 19, Android Browser - not a tablet or a phone'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Dalvik/1.6.0 (Linux; U; Android 4.4.4; WT19M-FI Build/KTU84Q)"
+  , []
+)
+test(
+    'Nexus 10, Dotcom Monitor Bot 29'
+  , ' b4s0 b4c b4v29 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 4.3; Nexus 10 Build/JSS15Q) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.72 Safari/537.36 DMBrowser-BV"
+  , []
+)
+test(
+    'China MID Tablet, Android Browser 4'
+  , ' b4s0 b4a b4v2 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 2.3.1; en-us; MID Build/GINGERBREAD) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"
+  , []
+)
+test(
+    'Galaxy Tab 3 7.0", Android Browser 4'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 4.2.2; en-us; SM-T217S Build/JDQ39) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+  , []
+)
+test(
+    'Galaxy Tablet, Android Browser 4'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 4.2.2; en-us; GT-P5113 Build/JDQ39) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+  , []
+)
+test(
+    'RIM Tablet OS, PlayBook Web Browser'
+  , ' b4s0 b4s b4v7 b4dt b4p_'
+  , "Mozilla/5.0 (PlayBook; U; RIM Tablet OS 2.1.0; en-US) AppleWebKit/536.2+ (KHTML, like Gecko) Version/7.2.1.0 Safari/536.2+"
+  , []
+)
+test(
+    'Galaxy Tab 4 7.0", Samsung Browser 1'
+  , ' b4s0 b4b b4v1 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 4.4.2; en-us; SAMSUNG SM-T230NU Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Version/1.5 Chrome/28.0.1500.94 Safari/537.36"
+  , []
+)
+test(
+    'Samsung GT-P3110, Android Browser 4'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 4.2.2; en-gb; GT-P3110 Build/JDQ39) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+  , []
+)
+test(
+    'Nexus 7, Chrome 18'
+  , ' b4s0 b4c b4v18 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Safari/535.19"
+  , []
+)
+test(
+    'Galaxy Tab 4 Nook 10.1", Samsung Browser 3.2'
+  , ' b4s0 b4b b4v3 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 5.0.2; SAMSUNG SM-T530NU Build/LRX22G) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/3.2 Chrome/38.0.2125.102 Safari/537.36"
+  , []
+)
+test(
+    'Unspecified Tablet, Firefox 40'
+  , ' b4s0 b4f b4v40 b4dt b4pa'
+  , "Mozilla/5.0 (Android; Tablet; rv:40.0) Gecko/40.0 Firefox/40.0"
+  , []
+)
+test(
+    'Samsung GT-N8010, Android Browser 4'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 4.1.2; en-gb; GT-N8010 Build/JZO54K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+  , []
+)
+test(
+    'Transformer, Android Browser 4'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 4.0.3; en-us; Transformer TF101 Build/IML74K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+  , []
+)
+test(
+    'Sony Tablet, Android Browser 4'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 4.0.3; en-us; Sony Tablet S Build/TISU0143) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+  , []
+)
+test(
+    'iPad ‘Webkit based browser’ (identified as Safari 6)'
+  , ' b4s0 b4s b4v6 b4dt b4pi'
+  , "Mozilla/5.0 (iPad; CPU OS 6_0_1 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Mobile/10A523"
+  , []
+)
+test(
+    'Transformer Pad, Chrome 18'
+  , ' b4s0 b4c b4v18 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 4.0.3; ASUS Transformer Pad TF300T Build/IML74K) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Safari/535.19"
+  , []
+)
+test(
+    'HP webOS, WebOS Browser 234 (identified as Safari 5)'
+  , ' b4s0 b4s b4v5 b4dt b4pl'
+  , "Mozilla/5.0 (hp-tablet; Linux; hpwOS/3.0.5; U; en-CA) AppleWebKit/534.6 (KHTML, like Gecko) wOSBrowser/234.83 Safari/534.6 TouchPad/1.0"
+  , []
+)
+test(
+    'Tabulet Sparta, Android Browser 4'
+  , ' b4s0 b4a b4v2 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 2.3.5; in-id; Tabulet Sparta Build/GRJ90) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"
+  , []
+)
+test(
+    'iPad 2, Facebook App 6 (identified as Safari 6)'
+  , ' b4s0 b4s b4v6 b4dt b4pi'
+  , "Mozilla/5.0 (iPad; CPU OS 6_0_1 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Mobile/10A523 [FBAN/FBIOS;FBAV/6.0.1;FBBV/180945;FBDV/iPad2,1;FBMD/iPad;FBSN/iPhone OS;FBSV/6.0.1;FBSS/1; FBCR/;FBID/tablet;FBLC/en_US;FBOP/1]"
+  , []
+)
+test(
+    'Galaxy Mega 7.0, QQ Browser 6.9 (identified as Chrome 37)'
+  , ' b4s0 b4c b4v37 b4dt b4pa'
+  , "ozilla/5.0 (Linux; U; Android 4.3; zh-cn; SM-T2556 Build/JLS36C) AppleWebKit/537.36 (KHTML, like Gecko)Version/4.0 Chrome/37.0.0.0 MQQBrowser/6.9 Mobile Safari/537.36"
+  , []
+)
+test(
+    'Ubuntu tablet (identified as Safari 7)'
+  , ' b4s0 b4s b4v7 b4dt b4p_'
+  , "Mozilla/5.0 (Ubuntu; Tablet) WebKit/537.21"
+  , []
+)
+test(
+    'iPad ‘Webkit based browser’ (identified as Safari 10)'
+  , ' b4s0 b4s b4v10 b4dt b4pi'
+  , "Mozilla/5.0 (iPad; CPU OS 10_3_2 like Mac OS X) AppleWebKit/603.2.4 (KHTML, like Gecko) Mobile/14F89"
+  , []
+)
+test(
+    'Galaxy Note, Android Browser 4'
+  , ' b4s0 b4a b4v2 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 2.3.6; en-gb; GT-N7000 Build/GINGERBREAD) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"
+  , []
+)
+test(
+    'iPad, Pinterest App'
+  , ' b4s0 b4s b4v9 b4dt b4pi'
+  , "Mozilla/5.0 (iPad; CPU OS 9_3_5 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13G36 [Pinterest/iOS]"
+  , []
+)
+test(
+    'iPad, Firefox 1.2'
+  , ' b4s0 b4f b4v1 b4dt b4pi'
+  , "Mozilla/5.0 (iPad; CPU OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) FxiOS/1.2 Mobile/13B143 Safari/601.1.46"
+  , []
+)
+test(
+    'Nexus 7, UC Browser 10.8'
+  , ' b4s0 b4u b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 6.0.1; en-US; Nexus 7 Build/MMB29Q) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/10.8.0.718 U3/0.8.0 Mobile Safari/534.30"
+  , []
+)
+test(
+    'Opera Tablet'
+  , ' b4s0 b4o b4v12 b4dt b4pa'
+  , "Opera/9.80 (Android 4.4; Linux; Opera Tablet/ADR-1411061201) Presto/2.11.355 Version/12.10"
+  , []
+)
+test(
+    'Nintendo Browser 1.0'
+  , ' b4s0 b4s b4v5 b4dg b4pi'
+  , "Mozilla/5.0 (iPaddy; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/534.52 (KHTML, like Gecko) NX/2.1.0.8.21 NintendoBrowser/1.0.0.7494.US"
+  , []
+)
+
+$out.innerHTML += 'Mobiles - developers.whatismybrowser.com/useragents/explore/hardware_type_specific/mobile/?order_by=-times_seen<br>'
+
+test(
+    'ASUS Android, Chrome 30'
+  , ' b4s0 b4c b4v30 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 4.4.2; ASUS_T00J Build/KVT49L) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Safari/537.36"
+  , []
+)
+test(
+    'Android, Firefox 38'
+  , ' b4s0 b4f b4v38 b4dt b4pa'
+  , "Mozilla/5.0 (Android; Mobile; rv:38.0) Gecko/38.0 Firefox/38.0"
+  , []
+)
+test(
+    'Rikomagic MK802 set top box, Android, Chrome 30 (b4 does not recognise TVs)'
+  , ' b4s0 b4c b4v30 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; Android 4.4.2; RKM MK902 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Safari/537.36"
+  , []
+)
+test(
+    'Very vague Android'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Dalvik/1.6.0 (Linux; U; Android 4.0.4; opensign_x86 Build/IMM76L)"
+  , []
+)
+test(
+    'AOpen eTILE WT22M-FI ‘all-in-one touch display’'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Dalvik/1.6.0 (Linux; U; Android 4.4.4; WT22M-FI Build/KTU84Q)"
+  , []
+)
+test(
+    'Galaxy Tab on Verizon'
+  , ' b4s0 b4a b4v4 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; U; Android 4.1.2; en-us; SCH-I915 Build/JZO54K) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30"
+  , []
+)
+test(
+    'Platform not specified, Opera Mini'
+  , ' b4s0 b4m b4v4 b4dt b4p_'
+  , "Opera/9.80 (J2ME/MIDP; Opera Mini/4.2/28.3492; U; en) Presto/2.8.119 Version/11.10"
+  , []
+)
+test(
+    'ALCATEL One Touch'
+  , ' b4s0 b4f b4v28 b4dt b4p_'
+  , "Mozilla/5.0 (Mobile; ALCATELOneTouch4019A; rv:28.0) Gecko/28.0 Firefox/28.0"
+  , []
+)
+test(
+    'BlackBerry 8520 (version not clear)'
+  , ' b4s0 b4_ b4v5 b4dt b4p_'
+  , "BlackBerry8520/5.0.0.592 Profile/MIDP-2.1 Configuration/CLDC-1.1 VendorID/168"
+  , []
+)
+test(
+    'Windows Phone, MSIE 10'
+  , ' b4s0 b4i b4v10 b4dt b4pw'
+  , "Mozilla/5.0 (compatible; MSIE 10.0; Windows Phone 8.0; Trident/6.0; IEMobile/10.0; ARM; Touch; HTC; Windows Phone 8S by HTC)"
+  , []
+)
+test(
+    'SpreadTrum, Opera Mini'
+  , ' b4s0 b4m b4v4 b4dt b4p_'
+  , "Opera/9.80 (SpreadTrum; Opera Mini/4.4.31492/60.313; U; fr) Presto/2.12.423 Version/12.16"
+  , []
+)
+test(
+    'Microsoft Office Mobile 15'
+  , ' b4s0 b4_ b4v15 b4dt b4p_'
+  , "Microsoft Office Mobile/15.0"
+  , []
+)
+test(
+    'ZTE Open, Firefox 18 (entry-level smartphone)'
+  , ' b4s0 b4f b4v18 b4dt b4p_'
+  , "Mozilla/5.0 (Mobile; ZTEOPEN; rv:18.1) Gecko/18.1 Firefox/18.1"
+  , []
+)
+test(
+    'Alcatel one touch, Firefox 18'
+  , ' b4s0 b4f b4v18 b4dt b4p_'
+  , "Mozilla/5.0 (Mobile; ALCATEL ONE TOUCH 4012A; rv:18.1) Gecko/18.1 Firefox/18.1"
+  , []
+)
+test(
+    'Openwave Mobile Browser 6.2 (‘b4v6’ would bloat code)'
+  , ' b4s0 b4_ b4v2 b4dt b4p_'
+  , "SM-B311V/1.0 UP.Browser/6.2.3.8 (GUI) MMP/2.0"
+  , []
+)
+test(
+    'ZTE-T96, NetFront 3'
+  , ' b4s0 b4_ b4v3 b4dt b4p_'
+  , "ZTE-T96 NetFront/3.5 QTV5.1 Profile/MIDP-2.1 Configuration/CLDC-1.1 firmware/T96 T02"
+  , []
+)
+test(
+    'Very odd, looks like some in-development browser, or a serious bug!'
+  , ' b4s0 b4c b4v5 b4dt b4pa'
+  , "Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Mobile Safari/<WebKit Rev>"
+  , []
+)
+test(
+    'Teashark mini browser (‘b4dt’ would bloat code)'
+  , ' b4s0 b4s b4v2 b4dd b4pm'
+  , "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en) AppleWebKit/418.9.1 (KHTML, like Gecko) Safari/419.3 TeaShark/0.8"
+  , []
+)
+
+$out.innerHTML += '<br><br>'
+
+$out.innerHTML +=
+    '<h2 class="' + (fail ? 'fail' : 'ok') + '">'
+  + '  Pass: ' + pass + '/' + (pass+fail)
+  + '</h2>'
+
+$out.innerHTML += '<br><br><br><br>'
 
 }()
 </script>
