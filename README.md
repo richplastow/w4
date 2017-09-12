@@ -1,8 +1,9 @@
 w4
 ==
 
-+ __Last update:__  2017/08/17
-+ __Version:__      0.0.15
++ __Last update:__  2017/09/12
++ __Version:__      0.0.16
+
 
 #### A collection of HTML snippets, for seamless webpage loads
 
@@ -14,25 +15,31 @@ w4
   [test](http://richplastow.com/w4/support/a4-test.html)
 + [b4:](b4.md) Checks whether the current browser is supported
   [test](http://richplastow.com/w4/support/b4-test.html)
-+ [i4:](i4.md) Runs a callback when the fonts you specify load
++ [i4:](i4.md) Triggers an event when the fonts you specify load
   [test](http://richplastow.com/w4/support/i4-test.html)
 + [p4:](p4.md) Attempts to preload a sequence of asset-bundles
   [test](http://richplastow.com/w4/support/p4-test.html)
 
 
+
+
 Author
 ------
+
 Created by Rich Plastow, during development of richplastow.com.
 
 + __Homepage:__     [richplastow.com](http://richplastow.com)
 + __LinkedIn:__     [richardplastow](https://linkedin.com/in/richardplastow)
 + __GitHub:__       [richplastow](https://github.com/richplastow)
-+ __Twitter:__      [@BtnWebVR](https://twitter.com/BtnWebVR)
++ __Twitter:__      [@RichPlastow](https://twitter.com/RichPlastow)
 + __Location:__     Brighton, UK
+
+
 
 
 Tested
 ------
+
 + __Android:__           Android Browser 2+, Chrome 34+, Firefox 51+, Samsung 3+
 + __iOS 9:__             UC Browser 10
 + __iOS 4:__             Safari 4
@@ -42,8 +49,11 @@ Tested
 + __OS X Snow Leopard:__ Safari 4+
 
 
+
+
 Changelog
 ---------
+
 + 0.0.1       Initial README.md, package.json, index.html, -4.js
 + 0.0.2       Proper homepage link
 + 0.0.3       Initial npm publish
@@ -57,5 +67,6 @@ Changelog
 + 0.0.11      Added .npmignore for slimline NPM package
 + 0.0.12      Minor text amends
 + 0.0.13      Minor text amends
-+ 0.0.14      b4 outputs to <html class="...">, not window.b4
-+ 0.0.15      b4 has new class-names and lots of unit tests
++ 0.0.14      b4 outputs to `<html class="...">`, not window.b4
++ 0.0.16      b4 has new class-names and lots of unit tests
++ 0.0.16      i4 has no callback, just the 'i4-ok' or 'i4-fail' events

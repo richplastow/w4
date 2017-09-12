@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 
-<!-- Polyfill CustomEvent for IE9+                    richplastow.com/w4/#a4 -->
+<!-- Polyfill CustomEvent for IE 9-11    richplastow.com/w4#a4    2017/09/13 -->
 <script>!function(W,C,P){/^f/.test(typeof W[C])?0:(W[C]=function(e,p,_){p=p||{}
 _=document.createEvent(C);_.initCustomEvent(e,!!p.bubbles,!!p.cancelable,
 p.detail);return _},W[C][P]=Event[P])}(this,'CustomEvent','prototype')</script>
 
-<!-- Keep html-tag class names updated with w4 state  richplastow.com/w4/#a4 -->
+<!-- Show w4 state in <html class="">    richplastow.com/w4#a4    2017/09/13 -->
 <script>!function(c){var N={},n,h=t=f=0;for(;n=c.item(h++);)if(/^[a-z]4$/.test(n
 ))N[n]=n+'-';function a(h,e){addEventListener(e,function(){if(c.contains(h))t--,
 c.remove(h),c.add(e),f+=/l$/.test(e);if(1==t)dispatchEvent(new CustomEvent('w4-'
@@ -62,15 +62,88 @@ html.i4-fail p.show-i4-fail {
 </head>
 <body>
 
-<!-- Run a callback when specified fonts load         richplastow.com/w4/#i4 -->
-<div id=i4 style=position:fixed;left:-99px></div><script>!function(F,c,t){var f,
-i=0,t=t||4000,d=document,S='scrollLeft',w=d.querySelector('#i4'),p=w.parentNode,
-E=[],s=function(f,e){e=d.createElement('DIV');e.innerHTML='IIII';e.style.cssText
-='max-width:99px;overflow-x:scroll;font:64px '+f+',monospace';w.appendChild(e);E
-.push(e);e[S]=9;e.addEventListener('scroll',l)},l=function(i,e){for(i=0;e=E[i++]
-;)if(1<e[S])return;c();c=function(){}};F=F.split(' ');for(;f=F[i++];)s(f);l()
-setTimeout(function(){p.removeChild(w);c(t)},t)}('JuneRegular JuneBold'
-,function(t){dispatchEvent(new CustomEvent('i4-'+(t?'fail':'ok')))})</script>
+<!-- Trigger an event when fonts load    richplastow.com/w4#i4    2017/09/12 - ->
+<div id=i4 style=position:fixed;left:-99px></div>
+                                                 <script>!function(F,t,c){var f,
+i=0,t=t||4e3,d=document,S='scroll',L=S+'Left'
+                                             ,c=c||function(t){dispatchEvent(new
+CustomEvent('i4-'+(t?'fail':'ok')))}
+                                    ,e,l=function(){for(i=0;e=E[i++];)if(1<e[L])
+return;c();c=function(){}}
+                          ,E=[],w=d.querySelector('#i4')
+                                                        ,s=function(f){E.push(e=
+d.createElement('DIV'));w.appendChild(e);e.addEventListener(S,l);e.style.cssText
+='font:64px '+f+',monospace;max-width:99px;overflow-x:'+S;e.innerHTML='IIII';e[L
+]=9}
+    ,p=w.parentNode;
+                    F=F.split(' ');for(;f=F[i++];)s(f);l();setTimeout(function()
+{p.removeChild(w);c(t)},t)
+                          }('JuneRegular JuneBold')</script>
+-->
+
+<!-- Trigger an event when fonts load    richplastow.com/w4#i4    2017/09/12 -->
+<div id="i4" style="position:fixed; left:-99px"></div><!-- hidden DIV -->
+<script>
+!function ( // use a closure to avoid polluting global scope (pre ES6)
+    F // space-delimited list of font names, eg 'JuneRegular JuneBold'
+  , t // timeout (optional) - defaults to 4000 milliseconds
+  , c // callback (optional) - for advanced usage, override 'i4-ok/fail' events
+) {
+    var f                          // each font name, eg 'JuneRegular'
+      , i = 0                      // iterator
+      , e                          // element
+      , t = t || 4e3               // default timeout to 4000ms
+      , d = document               // helps minification
+      , S = 'scroll'               // helps minification
+      , L = S+'Left'               // helps minification
+      , w = d.querySelector('#i4') // the hidden wrapper, created above
+      , p = w.parentNode           // container of the hidden DIV
+      , E = []                     // references to the `<div>IIII</div>`s
+      , c = c || function(t) { // callback - if t’s truthy, font-loading failed
+            dispatchEvent( // you can `addEventListener()` for two events...
+                new CustomEvent(
+                    'i4-' + (t ? 'fail' : 'ok') // ...'i4-fail' and 'i4-ok'
+                )
+            )
+        }
+      , s = function (f) { // creates `<div>IIII</div>` inside the hidden DIV
+            E.push(                           // record a reference...
+                e = d.createElement('DIV')    // ...to a new <DIV> element
+            )
+            w.appendChild(e)                  // insert into the hidden DIV
+            e.addEventListener(S, l) // wait for scroll-x to change
+            // The event-listener above may be triggered several times before
+            // `scrollLeft` is actually changed to 0 (or 1 on IE).
+            e.style.cssText =
+                'font: 64px '+f+',monospace;' // specify the custom font
+              + 'max-width: 99px;'            // make sure it stays hidden
+              + 'overflow-x: ' + S            // width-change modifies scroll-x
+            e.innerHTML = 'IIII'              // width reduces on font load
+            e[L] = 9                          // scroll-x 9 pixels
+            // The scroll-x value above will change from 9 to 0 (or 1 on IE)
+            // when the narrower font has loaded. Or if the font has already
+            // loaded, `e.scrollLeft = 9` will have no effect.
+        }
+      , l = function () { // run when a `<div>IIII</div>`’s scroll-x changes
+            for (i=0; e=E[i++];) // get a reference to each `<div>IIII</div>`
+                if (1 < e[L])    // the scrollbar is not at zero (ish!)...
+                    return       // ...so the custom font has not loaded
+            c() // call with no argument - signifies all fonts loaded in time
+            c = function() {} // prevent `setTimeout()` calling the callback
+        }
+
+    F = F.split(' ')      // 'FontOne FontTwo' becomes ['FontOne','FontTwo']
+    for (;f=F[i++];) s(f) // create a `<div>IIII</div>` for each font
+    l()                   // in case the fonts had already been loaded
+    setTimeout( function() {
+        p.removeChild(w) // clean up the DOM
+        c(t) // calling the callback with an argument signifies failure
+    }, t) // give up waiting for fonts to load after four seconds, by default
+}(
+    'JuneRegular JuneBold' // your space-delimited list of font names
+  , 4000 // milliseconds to wait before triggering the fail-event
+) // end closure
+</script>
 
 <h1>Font status:</h1>
 <p class="show-i4">JavaScript switched off!</p>
